@@ -99,7 +99,7 @@ namespace Project.Core.Audio
 
         private void Awake()
         {
-            // 씬 이동 중에 중복 생성된 경우 나중에 생긴 쪽을 제거한다.
+            // 싱글톤 구조로 설계
             if (_instance != null && _instance != this)
             {
                 Destroy(gameObject);
@@ -107,7 +107,7 @@ namespace Project.Core.Audio
             }
 
             _instance = this;
-            transform.SetParent(null);          // DontDestroyOnLoad는 최상위 오브젝트에만 적용된다
+            transform.SetParent(null);
             DontDestroyOnLoad(gameObject);
 
             Initialize();
