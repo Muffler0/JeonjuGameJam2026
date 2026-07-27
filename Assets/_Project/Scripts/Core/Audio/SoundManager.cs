@@ -40,7 +40,6 @@ namespace Project.Core.Audio
 
         /// <summary>
         /// 씬이 로드되기 전에 자동으로 호출된다.
-        /// 덕분에 어느 씬에서 게임을 시작하든 SoundManager가 항상 존재한다.
         /// </summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void AutoCreate()
