@@ -6,8 +6,6 @@ namespace Project.Core.Audio
 {
     /// <summary>
     /// 게임 전체의 사운드를 담당하는 싱글톤.
-    ///
-    /// 사용법 (씬 어디서든, 준비 작업 없이 한 줄):
     ///     SoundManager.Instance.PlaySFX(SoundKey.UiClick);
     ///     SoundManager.Instance.PlayBGM(SoundKey.StageBgm);
     ///     SoundManager.Instance.StopBGM();
@@ -17,11 +15,11 @@ namespace Project.Core.Audio
     [DisallowMultipleComponent]
     public class SoundManager : MonoBehaviour
     {
-        // Resources 폴더 기준 SoundLibrary 에셋 경로 (확장자 없이).
+        // Resources 폴더 기준 SoundLibrary 에셋 경로
         private const string LibraryResourcePath = "SoundLibrary";
 
-        // 동시에 재생 가능한 효과음 개수. 이보다 많이 겹치면 가장 오래된 것부터 잘린다.
-        private const int SfxSourceCount = 12;
+        // 동시에 재생 가능한 효과음 개수.
+        private const int SfxSourceCount = 10;
 
         // ─────────────────────────────────────────────
         //  싱글톤
@@ -40,7 +38,6 @@ namespace Project.Core.Audio
 
         /// <summary>
         /// 씬이 로드되기 전에 자동으로 호출된다.
-        /// 덕분에 어느 씬에서 게임을 시작하든 SoundManager가 항상 존재한다.
         /// </summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void AutoCreate()
