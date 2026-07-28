@@ -11,7 +11,7 @@ namespace Project.Core.Audio
         // - SFX : UI ---
         public const string ExampleSFX = "ExampleSFX";
         public const string UIClickSFX = "UIClickSFX";
-        public const string UICancelSFX = "UICancelSFX";
+        public const string UIHoverSFX = "UIHoverSFX";
 
         // --- SFX : Gameplay ---
         

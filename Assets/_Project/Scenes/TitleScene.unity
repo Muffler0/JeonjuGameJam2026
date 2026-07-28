@@ -535,7 +535,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4254686197879468676, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1222905328}
   m_SourcePrefab: {fileID: 100100000, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
 --- !u!224 &128718851 stripped
 RectTransform:
@@ -547,7 +550,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2348151550694415607, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
   m_PrefabInstance: {fileID: 128718850}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1222905325}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
@@ -1062,7 +1065,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4254686197879468676, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1979421624}
   m_SourcePrefab: {fileID: 100100000, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
 --- !u!224 &440548262 stripped
 RectTransform:
@@ -1074,7 +1080,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2348151550694415607, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
   m_PrefabInstance: {fileID: 440548261}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1979421621}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
@@ -1651,6 +1657,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &666848223 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4254686197879468676, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
+  m_PrefabInstance: {fileID: 1233191617}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &691273387
 GameObject:
   m_ObjectHideFlags: 0
@@ -2723,6 +2734,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Project.UI.VolumeSlider
   channel: 2
   valueText: {fileID: 1358997710}
+--- !u!1 &1222905325 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4254686197879468676, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
+  m_PrefabInstance: {fileID: 128718850}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1222905328
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1222905325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 199222ae23386b244b6a6f6d1d71e477, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Project.UI.ButtonFeedback
+  clickSoundKey: UIClickSFX
+  hoverSoundKey: UIHoverSFX
+  clickVolume: 0.6
+  hoverVolume: 0.2
+  usePressAnimation: 1
+  pressedScale: 0.95
+  animationDuration: 0.08
 --- !u!1001 &1233191617
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2822,13 +2857,35 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4254686197879468676, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1233191622}
   m_SourcePrefab: {fileID: 100100000, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
 --- !u!224 &1233191618 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3433140107534924771, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
   m_PrefabInstance: {fileID: 1233191617}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1233191622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 666848223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 199222ae23386b244b6a6f6d1d71e477, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Project.UI.ButtonFeedback
+  clickSoundKey: UIClickSFX
+  hoverSoundKey: UIHoverSFX
+  clickVolume: 0.6
+  hoverVolume: 0.2
+  usePressAnimation: 1
+  pressedScale: 0.95
+  animationDuration: 0.08
 --- !u!1 &1315167192
 GameObject:
   m_ObjectHideFlags: 0
@@ -3372,6 +3429,11 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1519594669 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4254686197879468676, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
+  m_PrefabInstance: {fileID: 1574915127}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1569429139
 GameObject:
   m_ObjectHideFlags: 0
@@ -3548,7 +3610,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4254686197879468676, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1574915132}
   m_SourcePrefab: {fileID: 100100000, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
 --- !u!224 &1574915128 stripped
 RectTransform:
@@ -3560,12 +3625,31 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2348151550694415607, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
   m_PrefabInstance: {fileID: 1574915127}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1519594669}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+--- !u!114 &1574915132
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1519594669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 199222ae23386b244b6a6f6d1d71e477, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Project.UI.ButtonFeedback
+  clickSoundKey: UIClickSFX
+  hoverSoundKey: UIHoverSFX
+  clickVolume: 0.6
+  hoverVolume: 0.2
+  usePressAnimation: 1
+  pressedScale: 0.95
+  animationDuration: 0.08
 --- !u!1 &1584459199
 GameObject:
   m_ObjectHideFlags: 0
@@ -4565,11 +4649,59 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1961701595}
   m_CullTransparentMesh: 1
+--- !u!1 &1979421621 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4254686197879468676, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
+  m_PrefabInstance: {fileID: 440548261}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1979421624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1979421621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 199222ae23386b244b6a6f6d1d71e477, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Project.UI.ButtonFeedback
+  clickSoundKey: UIClickSFX
+  hoverSoundKey: UIHoverSFX
+  clickVolume: 0.6
+  hoverVolume: 0.2
+  usePressAnimation: 1
+  pressedScale: 0.95
+  animationDuration: 0.08
+--- !u!1 &2035805840 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4254686197879468676, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
+  m_PrefabInstance: {fileID: 7617614332873739542}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &2035805841 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3433140107534924771, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
   m_PrefabInstance: {fileID: 7617614332873739542}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2035805845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2035805840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 199222ae23386b244b6a6f6d1d71e477, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Project.UI.ButtonFeedback
+  clickSoundKey: UIClickSFX
+  hoverSoundKey: UIHoverSFX
+  clickVolume: 0.6
+  hoverVolume: 0.2
+  usePressAnimation: 1
+  pressedScale: 0.95
+  animationDuration: 0.08
 --- !u!1 &2105298396
 GameObject:
   m_ObjectHideFlags: 0
@@ -4819,7 +4951,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4254686197879468676, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2035805845}
   m_SourcePrefab: {fileID: 100100000, guid: 2ac5076d84ea91646a02ef62c3a20d40, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
