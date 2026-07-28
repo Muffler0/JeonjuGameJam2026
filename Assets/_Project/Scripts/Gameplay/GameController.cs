@@ -4,47 +4,25 @@ using System.Collections.Generic;
 namespace Project.Gameplay
 {
     // =============================================================
-    //  実装メモ（ルール層担当）
+    //  Toy Tangle ルール層
     //
-    //  ・シグネチャは一切変更していません。
-    //  ・UnityEngine 不使用、static 不使用、例外を投げません。
-    //  ・不正な入力は Log に理由を出して return します。
+    //  ・UnityEngine 不使用。純粋な C# のみ。
+    //  ・例外は投げず、不正な入力は Log に理由を出して無視します。
+    //  ・static 状態なし。ResetForNewRound で完全に初期化されます。
     //
-    //  【既存の口だけでは表現しきれず、暫定対応した点】
+    //  ターン構造（企画書の用語と 1:1）
+    //    1 ターン = 一人の推測。相手はそのターンにお題を受け取って説明します。
+    //    奇数ターンは先手、偶数ターンは後手が推測します。
+    //    10 ターンが終わると「追加ターン」で両者が同時に推測します。
     //
-    //  (A) GameFinishedInfo に正解アイテムが無いため、結果画面用の値は
-    //      GetSecretItemId(PlayerId) から読んでください。
-    //      ゲーム終了後も保持されます（ResetForNewRound で消えます）。
-    //
-    //  (B) OnTopicPresented の第2引数は topicId として使っています。
-    //      お題は盤面スロットとは無関係な独立データのためです。
-    //      お題テキストは UI 側が topicId から引いてください。
-    //
-    //  (C) お題が複数出る場合（ミスのペナルティ）は、
-    //      OnTopicPresented を連続で複数回発火します。
-    //      「1個ずつ送って表示」は送り用の入力メソッドが必要なため、
-    //      現時点ではまとめて通知する形にしています。
-    //
-    //  (D) お題の種類数は TopicCount プロパティで設定してください。
-    //      StartGame より前に設定します（既定 10）。
-    //
-    //  (E) 画面遷移の判断材料として CurrentPhase を追加しました。
-    //      OnTurnChanged は「手番が変わったとき」に加えて
-    //      「同じ人のまま次の操作へ進んだとき」にも発火します。
-    //      UI は OnTurnChanged を受けて CurrentPhase を見てください。
-    //
-    //  (F) 乱数はお題の抽選にのみ使います。ルール層を両クライアントで
-    //      動かす場合は、StartGame の前に RandomSeed へ同じ値を
-    //      設定してください（マスターのみで動かすなら不要）。
+    //  ペナルティトークン
+    //    推測を外すと 1 個獲得（最大 1 個）。保持中は推測できません。
+    //    自分が説明する番になってお題を引く時点で消滅し、
+    //    このときお題を 2 個引いて説明することになります。
+    //    最後の 10 ターン目で得たトークンは引く機会がないため追加ターンまで残り、
+    //    両者正解のときに敗北条件として働きます。
     // =============================================================
 
-    /// <summary>
-    /// ゲームのルールを持つクラス。
-    /// 外部との接点は「入力メソッド」と「通知イベント」の 2 種類だけです。
-    ///
-    /// 入力  : 外部 -> ルール層（Submit系メソッド）
-    /// 通知  : ルール層 -> 外部（On系イベント）
-    /// </summary>
     public class GameController
     {
         /// <summary>いま外部に求めている操作。UI の画面切り替え用。</summary>
@@ -53,99 +31,89 @@ namespace Project.Gameplay
             /// <summary>未開始 / 終了後</summary>
             Idle = 0,
 
-            /// <summary>秘密のアイテムを選ぶ</summary>
+            /// <summary>おもちゃの選択（両者同時）</summary>
             SecretSelection = 1,
 
-            /// <summary>解答するかどうかを選ぶ</summary>
+            /// <summary>推測するか見送るかの選択（推測側のみ）</summary>
             AnswerDecision = 2,
 
-            /// <summary>盤面からアイテムを選ぶ</summary>
+            /// <summary>盤面からおもちゃを選ぶ（推測側のみ）</summary>
             ItemSelection = 3,
 
-            /// <summary>確認ダイアログ</summary>
+            /// <summary>確認ダイアログ（推測側のみ）</summary>
             Confirmation = 4,
 
+            /// <summary>追加ターン。両者が同時に選択し確定します。</summary>
+            FinalGuess = 5,
+
             /// <summary>結果表示</summary>
-            Finished = 5
+            Finished = 6
         }
 
-        // ---------------------------------------------------------
-        //  通知イベント（ルール層 -> 外部）
-        // ---------------------------------------------------------
+        // -------------------------------------------------------
+        //  通知イベント
+        // -------------------------------------------------------
 
-        /// <summary>お題が提示された。引数は（出題者, スロット番号）</summary>
+        /// <summary>お題が提示された。(説明する側, topicId)</summary>
         public event Action<PlayerId, int> OnTopicPresented;
 
-        /// <summary>判定が 1 回行われた。</summary>
+        /// <summary>判定が 1 回行われた。追加ターンでは 2 回発生します。</summary>
         public event Action<JudgeReport> OnJudged;
 
-        /// <summary>
-        /// ゲームが終了した。
-        /// 画面遷移はこのイベントでのみ行います。
-        /// OnJudged では遷移しないでください（後半の相手にも機会があるため）。
-        /// </summary>
+        /// <summary>ゲームが終了した。画面遷移はこのイベントでのみ行ってください。</summary>
         public event Action<GameFinishedInfo> OnGameFinished;
 
-        /// <summary>手番が変わった。</summary>
+        /// <summary>入力待ちの相手が変わった。同時進行の区間では PlayerId.None が来ます。</summary>
         public event Action<PlayerId> OnTurnChanged;
 
-        /// <summary>
-        /// ターンが始まった。(ターン番号, 最大ターン数, 最終ターンか)
-        /// 最終ターンでは isFinal が true になるので、UI は「Final Pick」を表示してください。
-        /// このターンで決着しなければ引き分けになります。
-        /// </summary>
+        /// <summary>ターンが始まった。(ターン番号, 最大ターン数, 追加ターンか)</summary>
         public event Action<int, int, bool> OnTurnStarted;
+
+        /// <summary>ペナルティトークンの保持状態が変わった。(対象, 保持しているか)</summary>
+        public event Action<PlayerId, bool> OnPenaltyChanged;
 
         /// <summary>デバッグ用のログ出力口。Unity 側が受け取って表示します。</summary>
         public Action<string> Log;
 
-        // ---------------------------------------------------------
-        //  状態の読み取り（外部 -> ルール層）
-        // ---------------------------------------------------------
+        // -------------------------------------------------------
+        //  読み取り専用の状態
+        // -------------------------------------------------------
 
-        /// <summary>現在の手番。いま入力を待っているプレイヤーを指します。</summary>
+        /// <summary>いま入力を待っているプレイヤー。同時進行の区間では None。</summary>
         public PlayerId CurrentTurn { get; private set; }
 
-        /// <summary>ゲームが進行中かどうか。</summary>
         public bool IsPlaying { get; private set; }
 
-        /// <summary>いま外部に求めている操作。</summary>
         public Phase CurrentPhase { get; private set; }
 
-        /// <summary>現在のターン数（1 始まり）。</summary>
+        /// <summary>現在のターン番号（1 始まり）。追加ターンは MaxTurnCount + 1。</summary>
         public int TurnNumber { get; private set; }
 
-        /// <summary>現在が最終ターンか。MaxTurnCount が 0 以下（無制限）なら常に false。</summary>
-        public bool IsFinalTurn
-        {
-            get { return MaxTurnCount > 0 && TurnNumber >= MaxTurnCount; }
-        }
+        /// <summary>いまが追加ターン（同時推測）か。</summary>
+        public bool IsExtraTurn { get { return CurrentPhase == Phase.FinalGuess; } }
+
+        /// <summary>このターンで説明する側。</summary>
+        public PlayerId CurrentDescriber { get; private set; }
 
         /// <summary>盤面のスロット数。</summary>
-        public int SlotCount
-        {
-            get { return _itemIds == null ? 0 : _itemIds.Length; }
-        }
+        public int SlotCount { get { return _itemIds == null ? 0 : _itemIds.Length; } }
 
-        // ---------------------------------------------------------
-        //  外部から設定する値（StartGame より前に設定）
-        // ---------------------------------------------------------
+        // -------------------------------------------------------
+        //  StartGame より前に設定する値
+        // -------------------------------------------------------
 
-        /// <summary>お題の種類数。topicId は 0 〜 TopicCount-1 の範囲で発番されます。</summary>
+        /// <summary>お題プールの大きさ。10 ターン + ペナルティ分を賄うには 15 以上を推奨。</summary>
         public int TopicCount { get; set; }
 
         /// <summary>お題抽選の乱数シード。0 以下なら実行時刻から自動生成します。</summary>
         public int RandomSeed { get; set; }
 
-        /// <summary>1 回のヒントで出すお題数の上限。0 以下で無制限。</summary>
-        public int MaxTopicsPerHint { get; set; }
-
-        /// <summary>この数のターンを終えても決着しなければ引き分け。</summary>
+        /// <summary>総ターン数。企画書の基準では 10。</summary>
         public int MaxTurnCount { get; set; }
 
-        // ---------------------------------------------------------
+        // -------------------------------------------------------
         //  内部状態
-        // ---------------------------------------------------------
+        // -------------------------------------------------------
 
         private int[] _itemIds;
         private PlayerId _firstPlayer = PlayerId.None;
@@ -153,107 +121,105 @@ namespace Project.Gameplay
         private readonly int[] _secretItemIds = { -1, -1 };
         private readonly int[] _secretSlotIndices = { -1, -1 };
 
-        /// <summary>未消化のペナルティ。出題側へ回った時点で 0 に戻ります。</summary>
-        private readonly int[] _pendingPenalties = new int[2];
+        /// <summary>ペナルティトークンの保持。最大 1 個なので bool で十分です。</summary>
+        private readonly bool[] _hasPenalty = new bool[2];
 
-        private readonly bool[] _correctThisTurn = new bool[2];
+        /// <summary>確認待ちのスロット。追加ターンでは両者が各自持ちます。</summary>
+        private readonly int[] _pendingSlots = { -1, -1 };
 
-        private readonly List<int>[] _topicDecks = { new List<int>(), new List<int>() };
-        private readonly int[] _topicCursors = new int[2];
+        /// <summary>追加ターンで確定提出を終えたか。</summary>
+        private readonly bool[] _finalSubmitted = new bool[2];
+
+        /// <summary>共用のお題デッキ。1 試合で引いたお題は二度と出ません。</summary>
+        private readonly List<int> _topicDeck = new List<int>();
+        private int _topicCursor;
 
         private Random _random;
 
-        private int _halfIndex;
-        private PlayerId _hintGiver = PlayerId.None;
-        private PlayerId _answerer = PlayerId.None;
-        private int _pendingSlotIndex = -1;
-
         public GameController()
         {
-            TopicCount = 10;
-            MaxTopicsPerHint = 5;
-            MaxTurnCount = 999;
+            TopicCount = 15;
+            MaxTurnCount = 10;
             CurrentPhase = Phase.Idle;
             CurrentTurn = PlayerId.None;
+            CurrentDescriber = PlayerId.None;
         }
 
-        // ---------------------------------------------------------
-        //  読み取り用の補助 API
-        // ---------------------------------------------------------
+        // -------------------------------------------------------
+        //  読み取り補助 API
+        // -------------------------------------------------------
 
-        /// <summary>スロット番号からアイテム ID を取得します。範囲外は -1。</summary>
+        /// <summary>スロットのアイテム ID。範囲外は -1。</summary>
         public int GetItemIdAt(int slotIndex)
         {
             if (_itemIds == null || slotIndex < 0 || slotIndex >= _itemIds.Length) return -1;
             return _itemIds[slotIndex];
         }
 
-        /// <summary>
-        /// 指定プレイヤーの秘密のアイテム ID。未選択なら -1。
-        /// GameFinishedInfo に含められないため、結果画面はここから読んでください。
-        /// </summary>
+        /// <summary>指定プレイヤーの正解アイテム ID。未選択なら -1。</summary>
         public int GetSecretItemId(PlayerId player)
         {
-            var index = IndexOf(player);
-            return index < 0 ? -1 : _secretItemIds[index];
+            var i = IndexOf(player);
+            return i < 0 ? -1 : _secretItemIds[i];
         }
 
-        /// <summary>指定プレイヤーの秘密のアイテムがあるスロット番号。未選択なら -1。</summary>
+        /// <summary>指定プレイヤーの正解があるスロット番号。未選択なら -1。</summary>
         public int GetSecretSlotIndex(PlayerId player)
         {
-            var index = IndexOf(player);
-            return index < 0 ? -1 : _secretSlotIndices[index];
+            var i = IndexOf(player);
+            return i < 0 ? -1 : _secretSlotIndices[i];
         }
 
-        /// <summary>未消化のペナルティ数。</summary>
-        public int GetPendingPenalty(PlayerId player)
+        /// <summary>ペナルティトークンを持っているか。</summary>
+        public bool HasPenalty(PlayerId player)
         {
-            var index = IndexOf(player);
-            return index < 0 ? 0 : _pendingPenalties[index];
+            var i = IndexOf(player);
+            return i >= 0 && _hasPenalty[i];
         }
 
-        /// <summary>次にこのプレイヤーが出題側になったとき提示されるお題の数。</summary>
-        public int GetTopicCount(PlayerId player)
+        /// <summary>おもちゃの選択を終えたか。</summary>
+        public bool HasChosenSecret(PlayerId player)
         {
-            var index = IndexOf(player);
-            if (index < 0) return 0;
-
-            var count = 1 + _pendingPenalties[index];
-            if (MaxTopicsPerHint > 0 && count > MaxTopicsPerHint) count = MaxTopicsPerHint;
-            return count;
+            var i = IndexOf(player);
+            return i >= 0 && _secretSlotIndices[i] >= 0;
         }
 
-        /// <summary>このハーフターンで出題している側。</summary>
-        public PlayerId CurrentHintGiver
+        /// <summary>追加ターンで提出を終えたか。</summary>
+        public bool HasSubmittedFinalGuess(PlayerId player)
         {
-            get { return _hintGiver; }
+            var i = IndexOf(player);
+            return i >= 0 && _finalSubmitted[i];
         }
 
-        /// <summary>このハーフターンで解答する側。</summary>
-        public PlayerId CurrentAnswerer
+        /// <summary>いま推測できるか。トークン保持中は不可（追加ターンは例外）。</summary>
+        public bool CanGuess(PlayerId player)
         {
-            get { return _answerer; }
+            if (IsExtraTurn) return true;
+            return !HasPenalty(player);
         }
 
-        /// <summary>確認ダイアログで保留中のスロット番号。無ければ -1。</summary>
-        public int PendingSlotIndex
+        /// <summary>確認待ちのスロット。無ければ -1。</summary>
+        public int GetPendingSlot(PlayerId player)
         {
-            get { return _pendingSlotIndex; }
+            var i = IndexOf(player);
+            return i < 0 ? -1 : _pendingSlots[i];
         }
 
-        // ---------------------------------------------------------
-        //  ゲーム開始 / 終了
-        // ---------------------------------------------------------
+        /// <summary>次にこのプレイヤーが説明するとき提示されるお題の数。</summary>
+        public int GetTopicCountFor(PlayerId player)
+        {
+            return HasPenalty(player) ? 2 : 1;
+        }
+
+        // -------------------------------------------------------
+        //  開始 / 終了
+        // -------------------------------------------------------
 
         /// <summary>
-        /// ゲームを開始します。
-        ///
-        /// 盤面はシードから各自生成するのではなく、
-        /// マスター側が作った配列をそのまま両者に配ります。
-        /// 環境差で盤面がずれる心配がなくなるためです。
+        /// ゲームを開始します。盤面配列はマスターが作ったものをそのまま受け取ります。
         /// </summary>
-        /// <param name="itemIds">スロット順に並んだアイテム ID の配列</param>
-        /// <param name="firstPlayer">先手</param>
+        /// <param name="itemIds">スロット順に並んだアイテム ID</param>
+        /// <param name="firstPlayer">先手（奇数ターンに推測する側）</param>
         public void StartGame(int[] itemIds, PlayerId firstPlayer)
         {
             if (itemIds == null || itemIds.Length == 0)
@@ -268,10 +234,11 @@ namespace Project.Gameplay
                 return;
             }
 
-            if (TopicCount <= 0)
+            // 10 ターン + ペナルティ分を重複なしで引く必要があるため余裕が要ります。
+            if (TopicCount < MaxTurnCount)
             {
-                Log?.Invoke("StartGame: TopicCount が 0 以下です。");
-                return;
+                Log?.Invoke($"StartGame: TopicCount({TopicCount}) が MaxTurnCount({MaxTurnCount}) より小さいです。" +
+                            "お題が足りない場合はデッキを引き直します。");
             }
 
             ClearState();
@@ -282,23 +249,19 @@ namespace Project.Gameplay
             _firstPlayer = firstPlayer;
             _random = new Random(RandomSeed > 0 ? RandomSeed : Environment.TickCount);
 
-            RefillTopicDeck(PlayerId.Player1);
-            RefillTopicDeck(PlayerId.Player2);
+            RefillTopicDeck();
 
-            SetPlaying(true);
+            IsPlaying = true;
             TurnNumber = 0;
 
+            // おもちゃの選択は両者同時です。特定プレイヤーの手番ではありません。
             CurrentPhase = Phase.SecretSelection;
-            SetTurn(_firstPlayer);
-            Log?.Invoke("ゲーム開始。先手 " + _firstPlayer + " が秘密のアイテムを選びます。");
+            SetTurn(PlayerId.None);
+
+            Log?.Invoke($"ゲーム開始。先手 {_firstPlayer}。両者がおもちゃを選びます。");
         }
 
-        /// <summary>
-        /// 相手が退出したため、ゲームを中断します。
-        /// 待機中・ローディング中・対局中のどのタイミングでも呼ばれ得ます。
-        /// 既に終了している場合は何もせずに return してください。
-        /// </summary>
-        /// <param name="leaver">退出したプレイヤー</param>
+        /// <summary>相手の退出により中断します。既に終了していれば無視します。</summary>
         public void AbortGame(PlayerId leaver)
         {
             if (!IsPlaying)
@@ -307,54 +270,66 @@ namespace Project.Gameplay
                 return;
             }
 
-            Log?.Invoke("AbortGame: " + leaver + " が退出しました。");
+            Log?.Invoke($"AbortGame: {leaver} が退出しました。");
             FinishGame(PlayerId.None, GameEndReason.OpponentLeft);
         }
 
-        /// <summary>
-        /// 再戦のために状態を初期化します。
-        /// シーンは再読み込みせず、このメソッドで初期状態に戻します。
-        /// そのため、持ち越してはいけない状態が残らないよう注意してください。
-        /// </summary>
+        /// <summary>再戦のために状態を完全に初期化します。</summary>
         public void ResetForNewRound()
         {
             ClearState();
-            SetPlaying(false);
+            IsPlaying = false;
             CurrentPhase = Phase.Idle;
-            CurrentTurn = PlayerId.None;
+            SetTurn(PlayerId.None);
             Log?.Invoke("状態を初期化しました。");
         }
 
-        // ---------------------------------------------------------
-        //  入力（外部 -> ルール層）
-        //  引数は slotIndex(int) と bool のみに限定しています。
-        // ---------------------------------------------------------
+        // -------------------------------------------------------
+        //  入力
+        // -------------------------------------------------------
 
         /// <summary>
-        /// 自分の秘密のアイテムを決定します。
+        /// 自分のおもちゃを決めます。両者が決めた時点で 1 ターン目が始まります。
+        /// UI の 10 秒タイマーが切れたら、任意のスロットでこのメソッドを呼んでください。
         /// </summary>
         public void SubmitSecretItem(PlayerId player, int slotIndex)
         {
-            if (!Expect(Phase.SecretSelection, player)) return;
-            if (!ValidateSlot(slotIndex)) return;
-
-            var index = IndexOf(player);
-            _secretSlotIndices[index] = slotIndex;
-            _secretItemIds[index] = _itemIds[slotIndex];
-
-            Log?.Invoke(player + " が秘密のアイテムを決定しました。");
-
-            if (player == _firstPlayer)
+            if (!IsPlaying)
             {
-                SetTurn(Opponent(_firstPlayer));
+                Log?.Invoke("入力を無視: 進行中ではありません。");
                 return;
             }
 
-            BeginTurn();
+            if (CurrentPhase != Phase.SecretSelection)
+            {
+                Log?.Invoke($"入力を無視: phase={CurrentPhase}（SecretSelection ではない）");
+                return;
+            }
+
+            var index = IndexOf(player);
+            if (index < 0 || !ValidateSlot(slotIndex)) return;
+
+            if (_secretSlotIndices[index] >= 0)
+            {
+                Log?.Invoke($"入力を無視: {player} は既におもちゃを選んでいます。");
+                return;
+            }
+
+            _secretSlotIndices[index] = slotIndex;
+            _secretItemIds[index] = _itemIds[slotIndex];
+
+            Log?.Invoke($"{player} がおもちゃを選びました。");
+
+            // 両者が選び終わったときだけ進行します。
+            if (HasChosenSecret(PlayerId.Player1) && HasChosenSecret(PlayerId.Player2))
+            {
+                BeginTurn(1);
+            }
         }
 
         /// <summary>
-        /// 出題に答えるかどうかの意思表示。
+        /// 推測するか(true)見送るか(false)を決めます。
+        /// false は企画書の "enough"（OK ボタン）に相当し、そのターンを終わらせます。
         /// </summary>
         public void SubmitAnswerDecision(PlayerId player, bool willAnswer)
         {
@@ -362,8 +337,14 @@ namespace Project.Gameplay
 
             if (!willAnswer)
             {
-                Log?.Invoke(player + " は解答を見送りました。");
-                EndHalfTurn();
+                Log?.Invoke($"{player} が推測を見送りました。");
+                EndTurn();
+                return;
+            }
+
+            if (!CanGuess(player))
+            {
+                Log?.Invoke($"入力を無視: {player} はペナルティトークン保持中のため推測できません。");
                 return;
             }
 
@@ -372,205 +353,260 @@ namespace Project.Gameplay
         }
 
         /// <summary>
-        /// 盤面からアイテムを 1 つ選びます。
-        /// 判定結果は OnJudged で通知してください。
+        /// 盤面からおもちゃを 1 つ選びます。判定は確認のあとで行われます。
+        /// 追加ターンでは両者が各自呼び出せます。
         /// </summary>
         public void SubmitItemSelection(PlayerId player, int slotIndex)
         {
-            if (!Expect(Phase.ItemSelection, player)) return;
-            if (!ValidateSlot(slotIndex)) return;
+            var index = IndexOf(player);
+            if (index < 0 || !ValidateSlot(slotIndex)) return;
 
-            // 仕様に確認ダイアログがあるため、ここでは判定せず確認待ちにします。
-            // 判定は SubmitConfirmation(true) の中で行い、OnJudged で通知します。
-            _pendingSlotIndex = slotIndex;
+            if (IsExtraTurn)
+            {
+                if (_finalSubmitted[index])
+                {
+                    Log?.Invoke($"入力を無視: {player} は既に最終推測を確定しています。");
+                    return;
+                }
+
+                _pendingSlots[index] = slotIndex;
+                Log?.Invoke($"{player} が最終候補としてスロット {slotIndex} を選びました。");
+                return;
+            }
+
+            if (!Expect(Phase.ItemSelection, player)) return;
+
+            _pendingSlots[index] = slotIndex;
             CurrentPhase = Phase.Confirmation;
             SetTurn(player);
         }
 
         /// <summary>
-        /// 確認ダイアログなどの最終確定。
+        /// 選択を確定またはキャンセルします。
+        /// 追加ターンでは確定後に相手を待ち、両者が揃った時点でまとめて判定します。
         /// </summary>
         public void SubmitConfirmation(PlayerId player, bool confirmed)
         {
+            var index = IndexOf(player);
+            if (index < 0) return;
+
+            if (IsExtraTurn)
+            {
+                HandleFinalConfirmation(index, player, confirmed);
+                return;
+            }
+
             if (!Expect(Phase.Confirmation, player)) return;
 
             if (!confirmed)
             {
-                // キャンセル。ペナルティは付きません。
-                _pendingSlotIndex = -1;
+                // キャンセルにペナルティはありません。選び直せます。
+                _pendingSlots[index] = -1;
                 CurrentPhase = Phase.ItemSelection;
                 SetTurn(player);
                 return;
             }
 
-            var index = IndexOf(player);
-            var slotIndex = _pendingSlotIndex;
-            var guessedItemId = GetItemIdAt(slotIndex);
-            var targetItemId = _secretItemIds[IndexOf(Opponent(player))];
-            var correct = guessedItemId >= 0 && guessedItemId == targetItemId;
+            var slotIndex = _pendingSlots[index];
+            _pendingSlots[index] = -1;
+
+            var correct = Judge(player, slotIndex);
 
             if (correct)
             {
-                _correctThisTurn[index] = true;
+                // 先に当てた側の勝ち。ここで即座に終了します。
+                FinishGame(player, GameEndReason.Normal);
+                return;
             }
-            else
+
+            SetPenalty(player, true);
+            EndTurn();
+        }
+
+        private void HandleFinalConfirmation(int index, PlayerId player, bool confirmed)
+        {
+            if (_finalSubmitted[index])
             {
-                _pendingPenalties[index]++;
+                Log?.Invoke($"入力を無視: {player} は既に確定しています。");
+                return;
             }
 
-            _pendingSlotIndex = -1;
+            if (!confirmed)
+            {
+                _pendingSlots[index] = -1;
+                return;
+            }
 
-            var report = new JudgeReport
+            if (_pendingSlots[index] < 0)
+            {
+                Log?.Invoke($"入力を無視: {player} が選んだスロットがありません。");
+                return;
+            }
+
+            _finalSubmitted[index] = true;
+            Log?.Invoke($"{player} が最終推測を確定しました。");
+
+            if (_finalSubmitted[0] && _finalSubmitted[1])
+            {
+                ResolveExtraTurn();
+            }
+        }
+
+        // -------------------------------------------------------
+        //  進行
+        // -------------------------------------------------------
+
+        private void BeginTurn(int turnNumber)
+        {
+            TurnNumber = turnNumber;
+
+            // 奇数ターンは先手が推測します。
+            var guesser = (turnNumber % 2 == 1) ? _firstPlayer : Opponent(_firstPlayer);
+            var describer = Opponent(guesser);
+            CurrentDescriber = describer;
+
+            OnTurnStarted?.Invoke(TurnNumber, MaxTurnCount, false);
+
+            // 説明する側がトークンを持っていればお題をもう 1 つ引き、ここで消滅します。
+            var topicNum = GetTopicCountFor(describer);
+
+            Log?.Invoke($"--- {turnNumber} ターン目（説明 {describer} → 推測 {guesser}）お題 {topicNum} 個");
+
+            for (var i = 0; i < topicNum; i++)
+            {
+                OnTopicPresented?.Invoke(describer, DrawTopic());
+            }
+
+            SetPenalty(describer, false);
+
+            CurrentPhase = Phase.AnswerDecision;
+            SetTurn(guesser);
+        }
+
+        private void EndTurn()
+        {
+            if (TurnNumber < MaxTurnCount)
+            {
+                BeginTurn(TurnNumber + 1);
+                return;
+            }
+
+            BeginExtraTurn();
+        }
+
+        /// <summary>10 ターンがすべて終わったあとの同時推測ターン。</summary>
+        private void BeginExtraTurn()
+        {
+            TurnNumber = MaxTurnCount + 1;
+            CurrentDescriber = PlayerId.None;
+
+            _pendingSlots[0] = -1;
+            _pendingSlots[1] = -1;
+            _finalSubmitted[0] = false;
+            _finalSubmitted[1] = false;
+
+            Log?.Invoke("--- 追加ターン。両者が同時に最終推測を行います。");
+
+            CurrentPhase = Phase.FinalGuess;
+            OnTurnStarted?.Invoke(TurnNumber, MaxTurnCount, true);
+
+            SetTurn(PlayerId.None);
+        }
+
+        private void ResolveExtraTurn()
+        {
+            var p1Correct = Judge(PlayerId.Player1, _pendingSlots[0]);
+            var p2Correct = Judge(PlayerId.Player2, _pendingSlots[1]);
+
+            // 両者とも外れならトークンに関係なく引き分け。
+            if (!p1Correct && !p2Correct)
+            {
+                FinishGame(PlayerId.None, GameEndReason.Draw);
+                return;
+            }
+
+            // 片方だけ正解ならその側の勝ち。
+            if (p1Correct != p2Correct)
+            {
+                FinishGame(p1Correct ? PlayerId.Player1 : PlayerId.Player2, GameEndReason.Normal);
+                return;
+            }
+
+            // 両者正解の場合。トークンを持つ側が敗北し、状態が同じなら引き分け。
+            if (_hasPenalty[0] == _hasPenalty[1])
+            {
+                FinishGame(PlayerId.None, GameEndReason.Draw);
+                return;
+            }
+
+            FinishGame(_hasPenalty[0] ? PlayerId.Player2 : PlayerId.Player1, GameEndReason.Normal);
+        }
+
+        /// <summary>判定して OnJudged を発火します。戻り値は正解かどうか。</summary>
+        private bool Judge(PlayerId player, int slotIndex)
+        {
+            var guessedItemId = GetItemIdAt(slotIndex);
+            var targetItemId = GetSecretItemId(Opponent(player));
+            var correct = guessedItemId >= 0 && guessedItemId == targetItemId;
+
+            Log?.Invoke($"{player} の推測: itemId={guessedItemId} → {(correct ? "正解" : "不正解")}");
+
+            OnJudged?.Invoke(new JudgeReport
             {
                 Answerer = player,
                 SlotIndex = slotIndex,
                 ItemId = guessedItemId,
                 Correct = correct
-            };
+            });
 
-            Log?.Invoke(player + " の解答: itemId=" + guessedItemId + " → " + (correct ? "正解" : "不正解"));
-            RaiseJudged(report);
-
-            // ★ここで勝敗を確定させないこと。
-            //   前半で正解しても後半の相手に解答機会が残るため
-            //   （両者正解なら引き分け）、判定はターン末まで保留します。
-            EndHalfTurn();
-        }
-
-        // ---------------------------------------------------------
-        //  進行
-        // ---------------------------------------------------------
-
-        private void BeginTurn()
-        {
-            TurnNumber++;
-            _correctThisTurn[0] = false;
-            _correctThisTurn[1] = false;
-
-            if (IsFinalTurn)
-            {
-                Log?.Invoke("最終ターンです（Final Pick）。決着しなければ引き分けになります。");
-            }
-
-            // ★お題より先に通知します。UI が Final Pick を出してからお題が届く順序になります。
-            RaiseTurnStarted(TurnNumber, MaxTurnCount, IsFinalTurn);
-
-            BeginHalfTurn(0);
-        }
-
-        private void BeginHalfTurn(int halfIndex)
-        {
-            _halfIndex = halfIndex;
-            _hintGiver = halfIndex == 0 ? _firstPlayer : Opponent(_firstPlayer);
-            _answerer = Opponent(_hintGiver);
-
-            var giverIndex = IndexOf(_hintGiver);
-            var topicNum = GetTopicCount(_hintGiver);
-
-            Log?.Invoke("--- " + TurnNumber + "ターン目 " + (halfIndex == 0 ? "前半" : "後半")
-                        + "（出題 " + _hintGiver + " → 解答 " + _answerer + "）お題 " + topicNum + " 個");
-
-            for (var i = 0; i < topicNum; i++)
-            {
-                RaiseTopicPresented(_hintGiver, DrawTopic(_hintGiver));
-            }
-
-            // ★ペナルティはここで消化。次回のヒントはまた 1 個に戻ります。
-            _pendingPenalties[giverIndex] = 0;
-
-            CurrentPhase = Phase.AnswerDecision;
-            SetTurn(_answerer);
-        }
-
-        private void EndHalfTurn()
-        {
-            if (_halfIndex == 0)
-            {
-                BeginHalfTurn(1);
-                return;
-            }
-
-            // 両ハーフターンが終わったのでここで初めて勝敗を確定します。
-            var p1 = _correctThisTurn[0];
-            var p2 = _correctThisTurn[1];
-
-            if (p1 && p2)
-            {
-                FinishGame(PlayerId.None, GameEndReason.Draw);
-                return;
-            }
-
-            if (p1)
-            {
-                FinishGame(PlayerId.Player1, GameEndReason.Normal);
-                return;
-            }
-
-            if (p2)
-            {
-                FinishGame(PlayerId.Player2, GameEndReason.Normal);
-                return;
-            }
-
-            if (MaxTurnCount > 0 && TurnNumber >= MaxTurnCount)
-            {
-                FinishGame(PlayerId.None, GameEndReason.Draw);
-                return;
-            }
-
-            BeginTurn();
+            return correct;
         }
 
         private void FinishGame(PlayerId winner, GameEndReason reason)
         {
-            SetPlaying(false);
+            IsPlaying = false;
             CurrentPhase = Phase.Finished;
-            _pendingSlotIndex = -1;
+            CurrentDescriber = PlayerId.None;
+            _pendingSlots[0] = -1;
+            _pendingSlots[1] = -1;
 
-            var info = new GameFinishedInfo
+            Log?.Invoke($"ゲーム終了: winner={winner} reason={reason} / " +
+                        $"Player1 の正解={_secretItemIds[0]} Player2 の正解={_secretItemIds[1]}");
+
+            SetTurn(PlayerId.None);
+
+            OnGameFinished?.Invoke(new GameFinishedInfo
             {
                 Winner = winner,
                 Reason = reason
-            };
-
-            Log?.Invoke("ゲーム終了: winner=" + winner + " reason=" + reason
-                        + " / Player1の正解=" + _secretItemIds[0]
-                        + " Player2の正解=" + _secretItemIds[1]);
-
-            RaiseGameFinished(info);
+            });
         }
 
-        // ---------------------------------------------------------
-        //  お題の抽選
-        // ---------------------------------------------------------
+        // -------------------------------------------------------
+        //  お題の抽選（共用デッキ・重複なし）
+        // -------------------------------------------------------
 
-        private int DrawTopic(PlayerId player)
+        private int DrawTopic()
         {
-            var index = IndexOf(player);
-            if (index < 0) return 0;
-
-            if (_topicCursors[index] >= _topicDecks[index].Count)
+            if (_topicCursor >= _topicDeck.Count)
             {
-                RefillTopicDeck(player); // 枯渇したら山札をリセット
+                // プールが足りない場合は引き直します。本来はプールを増やすのが正しい対処です。
+                Log?.Invoke("お題デッキが尽きたため引き直します。TopicCount を増やすことを推奨します。");
+                RefillTopicDeck();
             }
 
-            var topicId = _topicDecks[index][_topicCursors[index]];
-            _topicCursors[index]++;
-            return topicId;
+            return _topicDeck[_topicCursor++];
         }
 
-        private void RefillTopicDeck(PlayerId player)
+        private void RefillTopicDeck()
         {
-            var index = IndexOf(player);
-            if (index < 0) return;
-
             var ids = new int[TopicCount];
             for (var i = 0; i < TopicCount; i++) ids[i] = i;
             Shuffle(ids);
 
-            _topicDecks[index].Clear();
-            _topicDecks[index].AddRange(ids);
-            _topicCursors[index] = 0;
+            _topicDeck.Clear();
+            _topicDeck.AddRange(ids);
+            _topicCursor = 0;
         }
 
         private void Shuffle(int[] values)
@@ -580,34 +616,46 @@ namespace Project.Gameplay
             for (var i = values.Length - 1; i > 0; i--)
             {
                 var j = _random.Next(i + 1);
-                var tmp = values[i];
-                values[i] = values[j];
-                values[j] = tmp;
+                (values[i], values[j]) = (values[j], values[i]);
             }
         }
 
-        // ---------------------------------------------------------
+        // -------------------------------------------------------
         //  補助
-        // ---------------------------------------------------------
+        // -------------------------------------------------------
+
+        private void SetTurn(PlayerId player)
+        {
+            CurrentTurn = player;
+            OnTurnChanged?.Invoke(player);
+        }
+
+        private void SetPenalty(PlayerId player, bool value)
+        {
+            var i = IndexOf(player);
+            if (i < 0 || _hasPenalty[i] == value) return;
+
+            _hasPenalty[i] = value;
+            Log?.Invoke($"{player} のペナルティトークン: {(value ? "獲得" : "消滅")}");
+            OnPenaltyChanged?.Invoke(player, value);
+        }
 
         private void ClearState()
         {
             _itemIds = null;
             _firstPlayer = PlayerId.None;
-            _hintGiver = PlayerId.None;
-            _answerer = PlayerId.None;
-            _halfIndex = 0;
-            _pendingSlotIndex = -1;
+            CurrentDescriber = PlayerId.None;
             TurnNumber = 0;
+            _topicDeck.Clear();
+            _topicCursor = 0;
 
             for (var i = 0; i < 2; i++)
             {
                 _secretItemIds[i] = -1;
                 _secretSlotIndices[i] = -1;
-                _pendingPenalties[i] = 0;
-                _correctThisTurn[i] = false;
-                _topicDecks[i].Clear();
-                _topicCursors[i] = 0;
+                _hasPenalty[i] = false;
+                _pendingSlots[i] = -1;
+                _finalSubmitted[i] = false;
             }
         }
 
@@ -625,24 +673,24 @@ namespace Project.Gameplay
             return -1;
         }
 
-        /// <summary>フェーズと手番が一致しているかを確認します。不一致なら false。</summary>
+        /// <summary>順次進行の区間で phase と手番が一致しているかを確認します。</summary>
         private bool Expect(Phase phase, PlayerId player)
         {
             if (!IsPlaying)
             {
-                Log?.Invoke("入力を無視: ゲームが進行中ではありません。");
+                Log?.Invoke("入力を無視: 進行中ではありません。");
                 return false;
             }
 
             if (CurrentPhase != phase)
             {
-                Log?.Invoke("入力を無視: phase=" + CurrentPhase + " expected=" + phase);
+                Log?.Invoke($"入力を無視: phase={CurrentPhase} expected={phase}");
                 return false;
             }
 
             if (player != CurrentTurn)
             {
-                Log?.Invoke("入力を無視: player=" + player + " expected=" + CurrentTurn);
+                Log?.Invoke($"入力を無視: player={player} expected={CurrentTurn}");
                 return false;
             }
 
@@ -652,136 +700,100 @@ namespace Project.Gameplay
         private bool ValidateSlot(int slotIndex)
         {
             if (_itemIds != null && slotIndex >= 0 && slotIndex < _itemIds.Length) return true;
-            Log?.Invoke("入力を無視: 不正なスロット " + slotIndex);
+            Log?.Invoke($"入力を無視: 不正なスロット {slotIndex}");
             return false;
         }
 
-        // ---------------------------------------------------------
+        // -------------------------------------------------------
         //  動作確認用
-        // ---------------------------------------------------------
+        // -------------------------------------------------------
 
         /// <summary>
-        /// Unity を使わずに動作を確認するための入口です。
-        /// ここに一通りの流れを書いておくと、単体で検証できます。
-        /// 例：StartGame -> SubmitSecretItem -> SubmitItemSelection -> 結果確認
+        /// Unity なしで確認するための入口です。
+        /// コンソールプロジェクトで Log を Console.WriteLine につないで呼べば動きます。
         /// </summary>
         public void RunSelfTest()
         {
-            var board = new int[24];
+            var board = new int[12];
             for (var i = 0; i < board.Length; i++) board[i] = i;
 
-            // --- ケース1: 前半に正解 → 後半は不正解 → 先に解答した側の勝ち
-            RunScenario("ケース1: 片方だけ正解", board, true, false);
+            // ケース1: 1 ターン目で正解 → 即座に終了
+            var c1 = NewForTest();
+            var c1Winner = PlayerId.None;
+            c1.OnGameFinished += info => c1Winner = info.Winner;
+            c1.StartGame(board, PlayerId.Player1);
+            c1.SubmitSecretItem(PlayerId.Player1, 3);
+            c1.SubmitSecretItem(PlayerId.Player2, 7);
+            GuessOnce(c1, PlayerId.Player1, 7);   // Player2 の正解は itemId 7
+            Log?.Invoke($"ケース1: winner={c1Winner}（Player1 なら正しい） / IsPlaying={c1.IsPlaying}（False なら正しい）");
 
-            // --- ケース2: 両者正解 → 引き分け（前半で終了しないことの確認）
-            RunScenario("ケース2: 両者正解", board, true, true);
+            // ケース2: 不正解 → トークン獲得 → 次に説明する番でお題 2 個 → トークン消滅
+            var c2 = NewForTest();
+            var topicCount = 0;
+            c2.StartGame(board, PlayerId.Player1);
+            c2.SubmitSecretItem(PlayerId.Player1, 3);
+            c2.SubmitSecretItem(PlayerId.Player2, 7);
+            GuessOnce(c2, PlayerId.Player1, 0);   // 外す
+            Log?.Invoke($"ケース2: Player1 のトークン={c2.HasPenalty(PlayerId.Player1)}（True なら正しい）");
+            c2.OnTopicPresented += (p, t) => topicCount++;
+            c2.SubmitAnswerDecision(PlayerId.Player2, false);  // 2 ターン目を見送り → 3 ターン目で Player1 が説明
+            Log?.Invoke($"ケース2: 3 ターン目のお題数={topicCount}（2 なら正しい） / " +
+                        $"Player1 のトークン={c2.HasPenalty(PlayerId.Player1)}（False なら正しい）");
 
-            // --- ケース3: 両者不正解 → 決着せず次ターンへ
-            var c3 = NewControllerForTest();
+            // ケース3: 誰も当てずに 10 ターン終了 → 追加ターン → 両者不正解 → 引き分け
+            var c3 = NewForTest();
+            var c3Reason = GameEndReason.Normal;
+            var extraTurnFired = false;
+            c3.OnTurnStarted += (turn, max, isExtra) => { if (isExtra) extraTurnFired = true; };
+            c3.OnGameFinished += info => c3Reason = info.Reason;
             c3.StartGame(board, PlayerId.Player1);
             c3.SubmitSecretItem(PlayerId.Player1, 3);
             c3.SubmitSecretItem(PlayerId.Player2, 7);
-            AnswerOnce(c3, PlayerId.Player2, 0);  // 外す
-            AnswerOnce(c3, PlayerId.Player1, 1);  // 外す
-            Log?.Invoke("ケース3: 未決着で続行 → TurnNumber=" + c3.TurnNumber
-                        + " (2 なら正しい) / IsPlaying=" + c3.IsPlaying);
-            Log?.Invoke("ケース3: ペナルティ消化前 Player2の次回お題数="
-                        + c3.GetTopicCount(PlayerId.Player2) + " (1 なら消化済み)");
 
-            // --- ケース4: 最終ターンで決着せず引き分け
-            var c4 = NewControllerForTest();
-            c4.MaxTurnCount = 1;
-            var finalTurnFired = false;
-            c4.OnTurnStarted += (turn, max, isFinal) =>
+            for (var turn = 1; turn <= 10; turn++)
             {
-                if (isFinal) finalTurnFired = true;
-                Log?.Invoke("ケース4: ターン開始 " + turn + "/" + max + " final=" + isFinal);
-            };
-            var c4Reason = GameEndReason.Normal;
-            c4.OnGameFinished += info => c4Reason = info.Reason;
+                c3.SubmitAnswerDecision(c3.CurrentTurn, false);   // 全ターン見送り
+            }
 
-            c4.StartGame(board, PlayerId.Player1);
-            c4.SubmitSecretItem(PlayerId.Player1, 3);
-            c4.SubmitSecretItem(PlayerId.Player2, 7);
-            AnswerOnce(c4, PlayerId.Player2, 0);  // 外す
-            AnswerOnce(c4, PlayerId.Player1, 1);  // 外す
-            Log?.Invoke("ケース4: finalTurnFired=" + finalTurnFired + " (True なら正しい) / reason="
-                        + c4Reason + " (Draw なら正しい)");
-        }
+            Log?.Invoke($"ケース3: 追加ターンに入った={extraTurnFired}（True なら正しい） / phase={c3.CurrentPhase}");
 
-        private void RunScenario(string label, int[] board, bool firstHalfCorrect, bool secondHalfCorrect)
-        {
-            var c = NewControllerForTest();
+            c3.SubmitItemSelection(PlayerId.Player1, 0);
+            c3.SubmitConfirmation(PlayerId.Player1, true);
+            Log?.Invoke($"ケース3: 片方だけ確定した時点の IsPlaying={c3.IsPlaying}（True なら正しい）");
+            c3.SubmitItemSelection(PlayerId.Player2, 1);
+            c3.SubmitConfirmation(PlayerId.Player2, true);
+            Log?.Invoke($"ケース3: reason={c3Reason}（Draw なら正しい）");
 
-            var winner = PlayerId.None;
-            var reason = GameEndReason.Normal;
-            var finishedCount = 0;
-            c.OnGameFinished += info =>
+            // ケース4: 再戦を 2 回繰り返しても状態が残らないか
+            var c4 = NewForTest();
+            for (var i = 0; i < 2; i++)
             {
-                winner = info.Winner;
-                reason = info.Reason;
-                finishedCount++;
-            };
-
-            c.StartGame(board, PlayerId.Player1);
-            c.SubmitSecretItem(PlayerId.Player1, 3);   // Player1 の正解は itemId 3
-            c.SubmitSecretItem(PlayerId.Player2, 7);   // Player2 の正解は itemId 7
-
-            // 前半: 出題 Player1 → 解答 Player2。Player1 の正解は slot 3。
-            AnswerOnce(c, PlayerId.Player2, firstHalfCorrect ? 3 : 0);
-
-            // 前半で正解していてもここで終わっていないことが重要。
-            Log?.Invoke(label + ": 前半終了時点の finished 回数=" + finishedCount + " (0 なら正しい)");
-
-            // 後半: 出題 Player2 → 解答 Player1。Player2 の正解は slot 7。
-            AnswerOnce(c, PlayerId.Player1, secondHalfCorrect ? 7 : 0);
-
-            Log?.Invoke(label + ": winner=" + winner + " reason=" + reason
-                        + " finished回数=" + finishedCount);
+                c4.StartGame(board, PlayerId.Player1);
+                c4.SubmitSecretItem(PlayerId.Player1, 3);
+                c4.SubmitSecretItem(PlayerId.Player2, 7);
+                GuessOnce(c4, PlayerId.Player1, 7);
+                c4.ResetForNewRound();
+            }
+            Log?.Invoke($"ケース4: 初期化後 turn={c4.TurnNumber} phase={c4.CurrentPhase} " +
+                        $"Player1 のトークン={c4.HasPenalty(PlayerId.Player1)}（0 / Idle / False なら正しい）");
         }
 
-        private GameController NewControllerForTest()
+        private GameController NewForTest()
         {
-            var c = new GameController();
-            c.TopicCount = TopicCount;
-            c.RandomSeed = 12345;
-            c.Log = Log;
-            return c;
+            return new GameController
+            {
+                TopicCount = TopicCount,
+                MaxTurnCount = MaxTurnCount,
+                RandomSeed = 12345,
+                Log = Log
+            };
         }
 
-        private static void AnswerOnce(GameController c, PlayerId player, int slotIndex)
+        private static void GuessOnce(GameController c, PlayerId player, int slotIndex)
         {
             c.SubmitAnswerDecision(player, true);
             c.SubmitItemSelection(player, slotIndex);
             c.SubmitConfirmation(player, true);
         }
-
-        // ---------------------------------------------------------
-        //  イベント発火用のヘルパー
-        //  （null チェックを毎回書かなくて済むようにしたものです）
-        // ---------------------------------------------------------
-
-        protected void RaiseTopicPresented(PlayerId presenter, int slotIndex)
-            => OnTopicPresented?.Invoke(presenter, slotIndex);
-
-        protected void RaiseJudged(JudgeReport report)
-            => OnJudged?.Invoke(report);
-
-        protected void RaiseGameFinished(GameFinishedInfo info)
-            => OnGameFinished?.Invoke(info);
-
-        protected void RaiseTurnChanged(PlayerId next)
-            => OnTurnChanged?.Invoke(next);
-
-        protected void RaiseTurnStarted(int turnNumber, int maxTurnCount, bool isFinal)
-            => OnTurnStarted?.Invoke(turnNumber, maxTurnCount, isFinal);
-
-        protected void SetTurn(PlayerId player)
-        {
-            CurrentTurn = player;
-            RaiseTurnChanged(player);
-        }
-
-        protected void SetPlaying(bool playing) => IsPlaying = playing;
     }
 }
