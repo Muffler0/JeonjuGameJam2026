@@ -28,6 +28,21 @@ namespace Project.Core.Network
     }
 
     /// <summary>
+    /// 턴 시작 정보. 클라이언트는 룰 계층이 없으므로 필요한 값을 모두 실어 보낸다.
+    /// </summary>
+    public struct TurnInfo
+    {
+        public int TurnNumber;
+        public int MaxTurnCount;
+
+        /// <summary>추가 턴(동시 추측)인지.</summary>
+        public bool IsExtraTurn;
+
+        /// <summary>이번 턴에 설명하는 쪽. 추가 턴에서는 None.</summary>
+        public PlayerId Describer;
+    }
+
+    /// <summary>
     /// GameController(룰 계층)와 Photon 사이를 중계한다.
     ///
     /// 룰 계층은 Photon을 전혀 모르고, 이 클래스만 양쪽을 안다.
@@ -36,11 +51,11 @@ namespace Project.Core.Network
     /// 권한 구조:
     ///   - GameController는 마스터에서만 동작한다.
     ///   - 클라이언트의 입력은 RPC로 마스터에게 전달된다.
-    ///   - 판정 결과는 마스터가 전원에게 브로드캐스트한다.
+    ///   - 결과는 마스터가 전원에게 브로드캐스트한다.
     ///     (마스터 자신도 브로드캐스트로 받으므로 양쪽 처리 경로가 같다)
     ///
-    /// 커뮤니케이션 기능(채팅·힌트 등)은 룰 계층에 입력 창구가 없으므로,
-    /// 방식이 정해지면 이 클래스에 별도 RPC로 붙이면 된다.
+    /// 커뮤니케이션 기능(채팅 등)은 룰 계층에 입력 창구가 없으므로
+    /// 이 클래스에 별도 RPC로 붙이면 된다.
     /// </summary>
     [RequireComponent(typeof(PhotonView))]
     public class NetworkBridge : MonoBehaviourPunCallbacks
@@ -48,22 +63,19 @@ namespace Project.Core.Network
         // 재대국 응답을 기다리는 시간(초). 상대가 자리를 뜨면 무한 대기가 되므로 필요하다.
         private const float RematchTimeout = 30f;
 
-        [Header("보드 설정 (기획 확정 전 임시값)")]
-        [Tooltip("보드의 슬롯 개수")]
-        [SerializeField] private int boardSlotCount = 24;
+        [Header("보드 설정")]
+        [Tooltip("보드의 타일 개수")]
+        [SerializeField] private int boardSlotCount = 12;
 
-        [Tooltip("아이템 종류 수")]
-        [SerializeField] private int itemTypeCount = 24;
+        [Tooltip("장난감 종류 수. 타일 수보다 많으면 그중 일부만 사용된다.")]
+        [SerializeField] private int itemTypeCount = 12;
 
         [Header("룰 설정 (StartGame 전에 GameController로 전달된다)")]
-        [Tooltip("주제(お題) 종류 수")]
-        [SerializeField] private int topicCount = 10;
+        [Tooltip("주제 풀의 크기. 10턴 + 페널티분을 감당하려면 15 이상 권장")]
+        [SerializeField] private int topicCount = 15;
 
-        [Tooltip("한 번의 힌트에서 제시할 주제 수 상한. 0 이하면 무제한")]
-        [SerializeField] private int maxTopicsPerHint = 5;
-
-        [Tooltip("이 턴 수를 넘기면 무승부. 0 이하면 무제한")]
-        [SerializeField] private int maxTurnCount = 999;
+        [Tooltip("총 턴 수. 기획 기준 10")]
+        [SerializeField] private int maxTurnCount = 10;
 
         // -------------------------------------------------------
         //  UI가 구독할 이벤트
@@ -72,15 +84,21 @@ namespace Project.Core.Network
         /// <summary>보드가 준비됐다. (아이템 배열, 선공)</summary>
         public event Action<int[], PlayerId> OnBoardReady;
 
-        /// <summary>주제가 제시됐다. (출제자, topicId)</summary>
+        /// <summary>턴이 시작됐다.</summary>
+        public event Action<TurnInfo> OnTurnStarted;
+
+        /// <summary>주제가 제시됐다. (설명하는 쪽, topicId)</summary>
         public event Action<PlayerId, int> OnTopicPresented;
 
         /// <summary>판정 결과가 도착했다.</summary>
         public event Action<JudgeReport> OnJudged;
 
+        /// <summary>페널티 토큰 보유 상태가 바뀌었다. (대상, 보유 여부)</summary>
+        public event Action<PlayerId, bool> OnPenaltyChanged;
+
         /// <summary>
         /// 입력 대기 상태가 바뀌었다. (입력할 플레이어, 요구되는 조작)
-        /// 클라이언트는 GameController를 갖지 않으므로 phase도 함께 전달한다.
+        /// 동시 진행 구간에서는 플레이어가 None으로 온다.
         /// </summary>
         public event Action<PlayerId, GameController.Phase> OnTurnChanged;
 
@@ -102,6 +120,20 @@ namespace Project.Core.Network
 
         /// <summary>이 클라이언트가 어느 플레이어인지.</summary>
         public PlayerId LocalPlayerId { get; private set; } = PlayerId.None;
+
+        /// <summary>상대 플레이어.</summary>
+        public PlayerId OpponentPlayerId
+        {
+            get
+            {
+                if (LocalPlayerId == PlayerId.Player1) return PlayerId.Player2;
+                if (LocalPlayerId == PlayerId.Player2) return PlayerId.Player1;
+                return PlayerId.None;
+            }
+        }
+
+        /// <summary>보드 타일 수. UI가 임의 슬롯을 고를 때 쓴다.</summary>
+        public int SlotCount { get { return boardSlotCount; } }
 
         /// <summary>마스터에서만 존재한다. 클라이언트에서는 null.</summary>
         private GameController _game;
@@ -173,8 +205,12 @@ namespace Project.Core.Network
 
             // StartGame보다 먼저 설정해야 하는 값들.
             _game.TopicCount = topicCount;
-            _game.MaxTopicsPerHint = maxTopicsPerHint;
             _game.MaxTurnCount = maxTurnCount;
+
+            // CurrentDescriber는 OnTurnStarted 직전에 갱신되므로 여기서 읽어도 안전하다.
+            _game.OnTurnStarted += (turn, max, isExtra) =>
+                photonView.RPC(nameof(RpcTurnStarted), RpcTarget.All,
+                    turn, max, isExtra, (int)_game.CurrentDescriber);
 
             _game.OnTopicPresented += (presenter, topicId) =>
                 photonView.RPC(nameof(RpcTopicPresented), RpcTarget.All, (int)presenter, topicId);
@@ -182,6 +218,9 @@ namespace Project.Core.Network
             _game.OnJudged += report =>
                 photonView.RPC(nameof(RpcJudged), RpcTarget.All,
                     (int)report.Answerer, report.SlotIndex, report.ItemId, report.Correct);
+
+            _game.OnPenaltyChanged += (player, has) =>
+                photonView.RPC(nameof(RpcPenaltyChanged), RpcTarget.All, (int)player, has);
 
             // phase는 클라이언트가 직접 읽을 수 없으므로 여기서 함께 실어 보낸다.
             _game.OnTurnChanged += next =>
@@ -195,14 +234,18 @@ namespace Project.Core.Network
                     _game.GetSecretItemId(PlayerId.Player2));
         }
 
-        /// <summary>마스터가 보드를 만들어 전원에게 배포하고 게임을 시작한다.</summary>
+        /// <summary>마스터가 보드와 선공을 정해 전원에게 배포하고 게임을 시작한다.</summary>
         private void StartNewRound()
         {
             _gameEnded = false;
             _rematchVotes.Clear();
 
             int[] board = GenerateBoard();
-            photonView.RPC(nameof(RpcStartRound), RpcTarget.All, board, (int)PlayerId.Player1);
+
+            // 후공만 페널티 토큰 불이익을 받는 구조라, 선공을 매 판 무작위로 정한다.
+            var first = UnityEngine.Random.value < 0.5f ? PlayerId.Player1 : PlayerId.Player2;
+
+            photonView.RPC(nameof(RpcStartRound), RpcTarget.All, board, (int)first);
         }
 
         /// <summary>
@@ -211,14 +254,22 @@ namespace Project.Core.Network
         /// </summary>
         private int[] GenerateBoard()
         {
-            var board = new int[boardSlotCount];
-            for (int i = 0; i < board.Length; i++) board[i] = i % itemTypeCount;
+            // 장난감 종류에서 타일 수만큼 중복 없이 뽑는다.
+            var pool = new List<int>(itemTypeCount);
+            for (int i = 0; i < itemTypeCount; i++) pool.Add(i);
 
             var random = new Random(Guid.NewGuid().GetHashCode());
-            for (int i = board.Length - 1; i > 0; i--)
+            for (int i = pool.Count - 1; i > 0; i--)
             {
                 int j = random.Next(i + 1);
-                (board[i], board[j]) = (board[j], board[i]);
+                (pool[i], pool[j]) = (pool[j], pool[i]);
+            }
+
+            var board = new int[boardSlotCount];
+            for (int i = 0; i < board.Length; i++)
+            {
+                // 종류가 타일 수보다 적으면 어쩔 수 없이 반복해서 채운다.
+                board[i] = pool[i % pool.Count];
             }
 
             return board;
@@ -311,6 +362,18 @@ namespace Project.Core.Network
         }
 
         [PunRPC]
+        private void RpcTurnStarted(int turn, int max, bool isExtra, int describer)
+        {
+            OnTurnStarted?.Invoke(new TurnInfo
+            {
+                TurnNumber = turn,
+                MaxTurnCount = max,
+                IsExtraTurn = isExtra,
+                Describer = (PlayerId)describer
+            });
+        }
+
+        [PunRPC]
         private void RpcTopicPresented(int presenter, int topicId)
         {
             OnTopicPresented?.Invoke((PlayerId)presenter, topicId);
@@ -326,6 +389,12 @@ namespace Project.Core.Network
                 ItemId = itemId,
                 Correct = correct
             });
+        }
+
+        [PunRPC]
+        private void RpcPenaltyChanged(int player, bool has)
+        {
+            OnPenaltyChanged?.Invoke((PlayerId)player, has);
         }
 
         [PunRPC]
@@ -423,7 +492,7 @@ namespace Project.Core.Network
         // -------------------------------------------------------
         //  이탈 처리
         // -------------------------------------------------------
-
+        // Code by Claude Opus
         public override void OnPlayerLeftRoom(Player otherPlayer)
         {
             StopRematchTimeout();
