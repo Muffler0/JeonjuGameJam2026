@@ -16,24 +16,24 @@ namespace Project.Core.Audio
         [Serializable]
         public class SoundEntry
         {
-            [Tooltip("Key of the sound.")]
+            [Tooltip("Key used when calling from code. The constant and string of the SoundKey class must match.")]
             public string key;
 
             public AudioClip clip;
 
-            [Tooltip("Default Volume of the sound")]
+            [Tooltip("Default volume of this sound.")]
             [Range(0f, 1f)]
             public float volume = 1f;
 
-            [Tooltip("It prevents the sound from being heard mechanically when the same sound effect is played consecutively. Keep the BGM at 0")]
+            [Tooltip("set the BGM to 0")]
             [Range(0f, 0.5f)]
             public float pitchVariance = 0f;
         }
 
-        [Header("Background Music")]
+        [Header("BGM")]
         public List<SoundEntry> bgmList = new List<SoundEntry>();
 
-        [Header("Sound Effect")]
+        [Header("SFX")]
         public List<SoundEntry> sfxList = new List<SoundEntry>();
     }
 }

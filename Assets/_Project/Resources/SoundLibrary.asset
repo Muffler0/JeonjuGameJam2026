@@ -22,3 +22,11 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 426179826949f10498fe9e635588b02a, type: 3}
     volume: 1
     pitchVariance: 0.05
+  - key: UIClickSFX
+    clip: {fileID: 8300000, guid: 83868c110514e7b478ecf5d47c046ea3, type: 3}
+    volume: 0.6
+    pitchVariance: 0.05
+  - key: UIHoverSFX
+    clip: {fileID: 8300000, guid: ecba2046bea95d645a100307d3dc063f, type: 3}
+    volume: 0.6
+    pitchVariance: 0.05
