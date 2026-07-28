@@ -492,7 +492,7 @@ namespace Project.Core.Network
         // -------------------------------------------------------
         //  이탈 처리
         // -------------------------------------------------------
-
+        // Code by Claude Opus
         public override void OnPlayerLeftRoom(Player otherPlayer)
         {
             StopRematchTimeout();

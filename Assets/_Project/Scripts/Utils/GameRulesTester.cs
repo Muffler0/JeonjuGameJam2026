@@ -1,6 +1,7 @@
 using Project.Gameplay;
 using UnityEngine;
 
+// Code by Claude Opus
 public class GameRulesTester : MonoBehaviour
 {
     [ContextMenu("Run Self Test")]
