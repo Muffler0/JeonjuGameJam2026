@@ -1,0 +1,481 @@
+fileFormatVersion: 2
+guid: 70cc6e638b3655449a0de185a539a865
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 6586050674376818094
+    second: UIdesigns-Loading17_0
+  - first:
+      213: 5954881614194163930
+    second: UIdesigns-Loading17_1
+  - first:
+      213: 57050381943857621
+    second: UIdesigns-Loading17_2
+  - first:
+      213: -1718977314032544528
+    second: UIdesigns-Loading17_3
+  - first:
+      213: 3785839384641361107
+    second: UIdesigns-Loading17_4
+  - first:
+      213: -3200358146050388558
+    second: UIdesigns-Loading17_5
+  - first:
+      213: -3526742236836356720
+    second: UIdesigns-Loading17_6
+  - first:
+      213: -3714494668321174924
+    second: UIdesigns-Loading17_7
+  - first:
+      213: 3402893954794087989
+    second: UIdesigns-Loading17_8
+  - first:
+      213: 5523139556161577596
+    second: UIdesigns-Loading17_9
+  - first:
+      213: 96345230879223243
+    second: UIdesigns-Loading17_10
+  - first:
+      213: -8682318302675581477
+    second: UIdesigns-Loading17_11
+  - first:
+      213: 1768627569909829990
+    second: UIdesigns-Loading17_12
+  - first:
+      213: 6700369445697518329
+    second: UIdesigns-Loading17_13
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: UIdesigns-Loading17_0
+      rect:
+        serializedVersion: 2
+        x: 124
+        y: 174
+        width: 627
+        height: 598
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eadb3f6a13a566b50800000000000000
+      internalID: 6586050674376818094
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIdesigns-Loading17_1
+      rect:
+        serializedVersion: 2
+        x: 65
+        y: 54
+        width: 65
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad04c8d174df3a250800000000000000
+      internalID: 5954881614194163930
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIdesigns-Loading17_2
+      rect:
+        serializedVersion: 2
+        x: 340
+        y: 53
+        width: 69
+        height: 112
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d16016250faac000800000000000000
+      internalID: 57050381943857621
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIdesigns-Loading17_3
+      rect:
+        serializedVersion: 2
+        x: 445
+        y: 143
+        width: 19
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f4922c8d37f428e0800000000000000
+      internalID: -1718977314032544528
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIdesigns-Loading17_4
+      rect:
+        serializedVersion: 2
+        x: 159
+        y: 53
+        width: 63
+        height: 77
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d45b32bcd00a8430800000000000000
+      internalID: 3785839384641361107
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIdesigns-Loading17_5
+      rect:
+        serializedVersion: 2
+        x: 252
+        y: 53
+        width: 62
+        height: 77
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2bd83aee83b0693d0800000000000000
+      internalID: -3200358146050388558
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIdesigns-Loading17_6
+      rect:
+        serializedVersion: 2
+        x: 437
+        y: 55
+        width: 34
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 09d900ffe9e7e0fc0800000000000000
+      internalID: -3526742236836356720
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIdesigns-Loading17_7
+      rect:
+        serializedVersion: 2
+        x: 498
+        y: 55
+        width: 34
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 47a42a687c6737cc0800000000000000
+      internalID: -3714494668321174924
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIdesigns-Loading17_8
+      rect:
+        serializedVersion: 2
+        x: 525
+        y: 55
+        width: 46
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 53663d7c502893f20800000000000000
+      internalID: 3402893954794087989
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIdesigns-Loading17_9
+      rect:
+        serializedVersion: 2
+        x: 598
+        y: 20
+        width: 63
+        height: 63
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c726be9d92226ac40800000000000000
+      internalID: 5523139556161577596
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIdesigns-Loading17_10
+      rect:
+        serializedVersion: 2
+        x: 600
+        y: 81
+        width: 63
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bcdeb5e1a79465100800000000000000
+      internalID: 96345230879223243
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIdesigns-Loading17_11
+      rect:
+        serializedVersion: 2
+        x: 694
+        y: 53
+        width: 21
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bd5462e2185328780800000000000000
+      internalID: -8682318302675581477
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIdesigns-Loading17_12
+      rect:
+        serializedVersion: 2
+        x: 754
+        y: 53
+        width: 21
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 661107c776d6b8810800000000000000
+      internalID: 1768627569909829990
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIdesigns-Loading17_13
+      rect:
+        serializedVersion: 2
+        x: 814
+        y: 53
+        width: 21
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9fa7ea2c28e7cfc50800000000000000
+      internalID: 6700369445697518329
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      UIdesigns-Loading17_0: 6586050674376818094
+      UIdesigns-Loading17_1: 5954881614194163930
+      UIdesigns-Loading17_10: 96345230879223243
+      UIdesigns-Loading17_11: -8682318302675581477
+      UIdesigns-Loading17_12: 1768627569909829990
+      UIdesigns-Loading17_13: 6700369445697518329
+      UIdesigns-Loading17_2: 57050381943857621
+      UIdesigns-Loading17_3: -1718977314032544528
+      UIdesigns-Loading17_4: 3785839384641361107
+      UIdesigns-Loading17_5: -3200358146050388558
+      UIdesigns-Loading17_6: -3526742236836356720
+      UIdesigns-Loading17_7: -3714494668321174924
+      UIdesigns-Loading17_8: 3402893954794087989
+      UIdesigns-Loading17_9: 5523139556161577596
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

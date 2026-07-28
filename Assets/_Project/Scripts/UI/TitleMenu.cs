@@ -1,4 +1,3 @@
-using Project.Core.SceneFlow;
 using UnityEngine;
 using UnityEngine.UI;
 #if ENABLE_INPUT_SYSTEM
@@ -18,6 +17,7 @@ namespace Project.UI
         [SerializeField] private Button settingsButton;
         [SerializeField] private Button creditsButton;
         [SerializeField] private Button quitButton;
+        [SerializeField] private MatchmakingUI matchmakingUI;
 
         [Header("Panels")]
         [SerializeField] private GameObject settingsPanel;
@@ -85,8 +85,7 @@ namespace Project.UI
 
         private void OnStartClicked()
         {
-            // BGM도 화면과 함께 서서히 줄이며 게임 씬으로 이동한다.
-            SceneLoader.Instance.Load(SceneName.Game, fadeOutBgm: true);
+            if (matchmakingUI != null) matchmakingUI.OpenMatchPanel();
         }
 
         public void OpenSettings()
