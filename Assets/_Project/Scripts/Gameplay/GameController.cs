@@ -89,6 +89,13 @@ namespace Project.Gameplay
         /// <summary>手番が変わった。</summary>
         public event Action<PlayerId> OnTurnChanged;
 
+        /// <summary>
+        /// ターンが始まった。(ターン番号, 最大ターン数, 最終ターンか)
+        /// 最終ターンでは isFinal が true になるので、UI は「Final Pick」を表示してください。
+        /// このターンで決着しなければ引き分けになります。
+        /// </summary>
+        public event Action<int, int, bool> OnTurnStarted;
+
         /// <summary>デバッグ用のログ出力口。Unity 側が受け取って表示します。</summary>
         public Action<string> Log;
 
@@ -107,6 +114,12 @@ namespace Project.Gameplay
 
         /// <summary>現在のターン数（1 始まり）。</summary>
         public int TurnNumber { get; private set; }
+
+        /// <summary>現在が最終ターンか。MaxTurnCount が 0 以下（無制限）なら常に false。</summary>
+        public bool IsFinalTurn
+        {
+            get { return MaxTurnCount > 0 && TurnNumber >= MaxTurnCount; }
+        }
 
         /// <summary>盤面のスロット数。</summary>
         public int SlotCount
@@ -433,6 +446,15 @@ namespace Project.Gameplay
             TurnNumber++;
             _correctThisTurn[0] = false;
             _correctThisTurn[1] = false;
+
+            if (IsFinalTurn)
+            {
+                Log?.Invoke("最終ターンです（Final Pick）。決着しなければ引き分けになります。");
+            }
+
+            // ★お題より先に通知します。UI が Final Pick を出してからお題が届く順序になります。
+            RaiseTurnStarted(TurnNumber, MaxTurnCount, IsFinalTurn);
+
             BeginHalfTurn(0);
         }
 
@@ -665,6 +687,26 @@ namespace Project.Gameplay
                         + " (2 なら正しい) / IsPlaying=" + c3.IsPlaying);
             Log?.Invoke("ケース3: ペナルティ消化前 Player2の次回お題数="
                         + c3.GetTopicCount(PlayerId.Player2) + " (1 なら消化済み)");
+
+            // --- ケース4: 最終ターンで決着せず引き分け
+            var c4 = NewControllerForTest();
+            c4.MaxTurnCount = 1;
+            var finalTurnFired = false;
+            c4.OnTurnStarted += (turn, max, isFinal) =>
+            {
+                if (isFinal) finalTurnFired = true;
+                Log?.Invoke("ケース4: ターン開始 " + turn + "/" + max + " final=" + isFinal);
+            };
+            var c4Reason = GameEndReason.Normal;
+            c4.OnGameFinished += info => c4Reason = info.Reason;
+
+            c4.StartGame(board, PlayerId.Player1);
+            c4.SubmitSecretItem(PlayerId.Player1, 3);
+            c4.SubmitSecretItem(PlayerId.Player2, 7);
+            AnswerOnce(c4, PlayerId.Player2, 0);  // 外す
+            AnswerOnce(c4, PlayerId.Player1, 1);  // 外す
+            Log?.Invoke("ケース4: finalTurnFired=" + finalTurnFired + " (True なら正しい) / reason="
+                        + c4Reason + " (Draw なら正しい)");
         }
 
         private void RunScenario(string label, int[] board, bool firstHalfCorrect, bool secondHalfCorrect)
@@ -730,6 +772,9 @@ namespace Project.Gameplay
 
         protected void RaiseTurnChanged(PlayerId next)
             => OnTurnChanged?.Invoke(next);
+
+        protected void RaiseTurnStarted(int turnNumber, int maxTurnCount, bool isFinal)
+            => OnTurnStarted?.Invoke(turnNumber, maxTurnCount, isFinal);
 
         protected void SetTurn(PlayerId player)
         {
