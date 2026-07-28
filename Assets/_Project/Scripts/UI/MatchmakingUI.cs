@@ -71,30 +71,33 @@ namespace Project.UI
             codeInput.onValueChanged.AddListener(OnCodeInputChanged);
         }
 
+        private NetworkManager _net;
+
         private void OnEnable()
         {
-            var net = NetworkManager.Instance;
+            _net = NetworkManager.Instance;
+            _net.OnStateChanged += HandleStateChanged;
 
-            net.OnStateChanged += HandleStateChanged;
-            net.OnError += HandleError;
-            net.OnOpponentJoined += HandleOpponentJoined;
-            net.OnOpponentLeft += HandleOpponentLeft;
-            net.OnCountdownCancelled += HandleCountdownCancelled;
-            net.OnGameStart += HandleGameStart;
+            _net.OnStateChanged += HandleStateChanged;
+            _net.OnError += HandleError;
+            _net.OnOpponentJoined += HandleOpponentJoined;
+            _net.OnOpponentLeft += HandleOpponentLeft;
+            _net.OnCountdownCancelled += HandleCountdownCancelled;
+            _net.OnGameStart += HandleGameStart;
         }
 
         private void OnDisable()
         {
-            if (NetworkManager.Instance == null) return;
+            if (_net == null) return;
 
             var net = NetworkManager.Instance;
 
-            net.OnStateChanged -= HandleStateChanged;
-            net.OnError -= HandleError;
-            net.OnOpponentJoined -= HandleOpponentJoined;
-            net.OnOpponentLeft -= HandleOpponentLeft;
-            net.OnCountdownCancelled -= HandleCountdownCancelled;
-            net.OnGameStart -= HandleGameStart;
+            _net.OnStateChanged -= HandleStateChanged;
+            _net.OnError -= HandleError;
+            _net.OnOpponentJoined -= HandleOpponentJoined;
+            _net.OnOpponentLeft -= HandleOpponentLeft;
+            _net.OnCountdownCancelled -= HandleCountdownCancelled;
+            _net.OnGameStart -= HandleGameStart;
         }
 
         private void Update()
@@ -103,7 +106,7 @@ namespace Project.UI
 
             double remaining = NetworkManager.Instance.CountdownRemaining;
 
-            // 3.4초 남았으면 "3"이 아니라 "4"로 보이는 게 자연스럽다.
+            // 예시: 3.4초 남았으면 "3"이 아니라 "4"로 보이는 게 자연스럽다.
             int display = Mathf.Max(1, Mathf.CeilToInt((float)remaining));
             waitingStatusText.text = $"Starting in {display}...";
 
@@ -169,6 +172,7 @@ namespace Project.UI
             GUIUtility.systemCopyBuffer = codeText.text;
 
             // 카운트다운 중에는 남은 시간 표시가 더 중요하므로 덮어쓰지 않는다.
+            // Code by Claude Opus
             if (NetworkManager.Instance.State == NetworkState.Countdown) return;
 
             if (_copyFeedbackRoutine != null) StopCoroutine(_copyFeedbackRoutine);

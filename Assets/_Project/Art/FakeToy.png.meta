@@ -1,0 +1,533 @@
+fileFormatVersion: 2
+guid: ad96d82f65dc17a4782b33df011f75fd
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -9105118082670770544
+    second: FakeToy_0
+  - first:
+      213: -3998762322527872710
+    second: FakeToy_1
+  - first:
+      213: 512417679428516625
+    second: FakeToy_2
+  - first:
+      213: -7605145488316281458
+    second: FakeToy_3
+  - first:
+      213: -2829387314811391196
+    second: FakeToy_4
+  - first:
+      213: 3640118136848423612
+    second: FakeToy_5
+  - first:
+      213: -1718377653110696670
+    second: FakeToy_6
+  - first:
+      213: -7275408328081970545
+    second: FakeToy_7
+  - first:
+      213: -2004866358039005953
+    second: FakeToy_8
+  - first:
+      213: -791799054615724831
+    second: FakeToy_9
+  - first:
+      213: 3160430325263786995
+    second: FakeToy_10
+  - first:
+      213: -6702251294050630552
+    second: FakeToy_11
+  - first:
+      213: -4441821162522726392
+    second: FakeToy_12
+  - first:
+      213: 6974487772618377439
+    second: FakeToy_13
+  - first:
+      213: 8655148311302930249
+    second: FakeToy_14
+  - first:
+      213: -1363201189402637378
+    second: FakeToy_15
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: FakeToy_0
+      rect:
+        serializedVersion: 2
+        x: 488
+        y: 813
+        width: 427
+        height: 350
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0964c64485f14a180800000000000000
+      internalID: -9105118082670770544
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FakeToy_1
+      rect:
+        serializedVersion: 2
+        x: 951
+        y: 975
+        width: 247
+        height: 265
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a399280aada8188c0800000000000000
+      internalID: -3998762322527872710
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FakeToy_2
+      rect:
+        serializedVersion: 2
+        x: 1276
+        y: 1033
+        width: 318
+        height: 185
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 11b77fe1a297c1700800000000000000
+      internalID: 512417679428516625
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FakeToy_3
+      rect:
+        serializedVersion: 2
+        x: 1561
+        y: 902
+        width: 189
+        height: 376
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8d4ebfd878157690800000000000000
+      internalID: -7605145488316281458
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FakeToy_4
+      rect:
+        serializedVersion: 2
+        x: 66
+        y: 529
+        width: 435
+        height: 416
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 423bba85a3ffbb8d0800000000000000
+      internalID: -2829387314811391196
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FakeToy_5
+      rect:
+        serializedVersion: 2
+        x: 421
+        y: 410
+        width: 332
+        height: 379
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cba9e47c82c448230800000000000000
+      internalID: 3640118136848423612
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FakeToy_6
+      rect:
+        serializedVersion: 2
+        x: 861
+        y: 498
+        width: 437
+        height: 291
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2251e5cf0a81728e0800000000000000
+      internalID: -1718377653110696670
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FakeToy_7
+      rect:
+        serializedVersion: 2
+        x: 893
+        y: 774
+        width: 367
+        height: 251
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f8a61c02cae880b90800000000000000
+      internalID: -7275408328081970545
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FakeToy_8
+      rect:
+        serializedVersion: 2
+        x: 1298
+        y: 672
+        width: 367
+        height: 306
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ff434fa6ba84d24e0800000000000000
+      internalID: -2004866358039005953
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FakeToy_9
+      rect:
+        serializedVersion: 2
+        x: 1696
+        y: 678
+        width: 281
+        height: 236
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1ecb32874f6f205f0800000000000000
+      internalID: -791799054615724831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FakeToy_10
+      rect:
+        serializedVersion: 2
+        x: 877
+        y: 155
+        width: 232
+        height: 304
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3f368bad2aa1cdb20800000000000000
+      internalID: 3160430325263786995
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FakeToy_11
+      rect:
+        serializedVersion: 2
+        x: 1137
+        y: 106
+        width: 207
+        height: 281
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 864c5b645f1dcf2a0800000000000000
+      internalID: -6702251294050630552
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FakeToy_12
+      rect:
+        serializedVersion: 2
+        x: 1305
+        y: 347
+        width: 262
+        height: 297
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 800350cbf2b7b52c0800000000000000
+      internalID: -4441821162522726392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FakeToy_13
+      rect:
+        serializedVersion: 2
+        x: 1524
+        y: 229
+        width: 357
+        height: 470
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd849314dab5ac060800000000000000
+      internalID: 6974487772618377439
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FakeToy_14
+      rect:
+        serializedVersion: 2
+        x: 1995
+        y: 363
+        width: 270
+        height: 254
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 94f788d38834d1870800000000000000
+      internalID: 8655148311302930249
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FakeToy_15
+      rect:
+        serializedVersion: 2
+        x: 1401
+        y: 115
+        width: 126
+        height: 133
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ebb0444adbfe41de0800000000000000
+      internalID: -1363201189402637378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      FakeToy_0: -9105118082670770544
+      FakeToy_1: -3998762322527872710
+      FakeToy_10: 3160430325263786995
+      FakeToy_11: -6702251294050630552
+      FakeToy_12: -4441821162522726392
+      FakeToy_13: 6974487772618377439
+      FakeToy_14: 8655148311302930249
+      FakeToy_15: -1363201189402637378
+      FakeToy_2: 512417679428516625
+      FakeToy_3: -7605145488316281458
+      FakeToy_4: -2829387314811391196
+      FakeToy_5: 3640118136848423612
+      FakeToy_6: -1718377653110696670
+      FakeToy_7: -7275408328081970545
+      FakeToy_8: -2004866358039005953
+      FakeToy_9: -791799054615724831
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

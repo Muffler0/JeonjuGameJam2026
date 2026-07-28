@@ -39,6 +39,18 @@ MonoBehaviour:
   - DestroySpaceship
   - Fire
   - RespawnSpaceship
+  - RpcGameFinished
+  - RpcJudged
+  - RpcRematchDeclined
+  - RpcRematchVote
+  - RpcRematchVoteChanged
+  - RpcStartRound
+  - RpcSubmitAnswerDecision
+  - RpcSubmitConfirmation
+  - RpcSubmitItemSelection
+  - RpcSubmitSecretItem
+  - RpcTopicPresented
+  - RpcTurnChanged
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0
