@@ -8,7 +8,7 @@ using Random = System.Random;
 namespace Project.Core.Network
 {
     /// <summary>
-    /// 접속 상태. UI는 이 값 하나로 무엇을 보여줄지 결정한다.
+    /// 접속 상태.
     /// </summary>
     public enum NetworkState
     {
@@ -22,9 +22,6 @@ namespace Project.Core.Network
 
     /// <summary>
     /// Photon 연결, 방 생성·입장, 랜덤 매칭, 이탈 감지를 담당하는 싱글톤.
-    ///
-    /// 이 클래스는 UI를 직접 건드리지 않고 이벤트만 발생시킨다.
-    /// 화면에 무엇을 띄울지는 구독하는 쪽에서 정한다.
     ///
     /// 사용 예:
     ///     NetworkManager.Instance.OnStateChanged += HandleState;
@@ -53,11 +50,13 @@ namespace Project.Core.Network
         // -----------------------------------------------
 
         private static NetworkManager _instance;
+        private static bool _isQuitting;
 
         public static NetworkManager Instance
         {
             get
             {
+                if (_isQuitting) return null;
                 if (_instance != null) return _instance;
 
                 _instance = FindAnyObjectByType<NetworkManager>();
@@ -67,6 +66,11 @@ namespace Project.Core.Network
                 _instance = go.AddComponent<NetworkManager>();
                 return _instance;
             }
+        }
+
+        private void OnApplicationQuit()
+        {
+            _isQuitting = true;
         }
 
         // 게임 시작과 동시에 서버에 붙지 않는다.
@@ -293,6 +297,7 @@ namespace Project.Core.Network
 
         private static string GenerateRoomCode()
         {
+            // Code by Claude Opus
             var random = new Random(Guid.NewGuid().GetHashCode());
             var buffer = new char[RoomCodeLength];
 
