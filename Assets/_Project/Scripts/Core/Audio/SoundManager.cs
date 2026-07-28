@@ -7,25 +7,24 @@ namespace Project.Core.Audio
     /// <summary>
     /// 게임 전체의 사운드를 담당하는 싱글톤.
     ///
-    /// 사용법 (씬 어디서든, 준비 작업 없이 한 줄):
+    /// --- 사용법
     ///     SoundManager.Instance.PlaySFX(SoundKey.UiClick);
     ///     SoundManager.Instance.PlayBGM(SoundKey.StageBgm);
     ///     SoundManager.Instance.StopBGM();
-    ///
-    /// 씬에 오브젝트를 배치하지 않아도 게임 시작 시 자동으로 생성된다.
+    /// ---------------------
     /// </summary>
     [DisallowMultipleComponent]
     public class SoundManager : MonoBehaviour
     {
-        // Resources 폴더 기준 SoundLibrary 에셋 경로 (확장자 없이).
+        // SoundLibrary 에셋 경로
         private const string LibraryResourcePath = "SoundLibrary";
 
-        // 동시에 재생 가능한 효과음 개수. 이보다 많이 겹치면 가장 오래된 것부터 잘린다.
-        private const int SfxSourceCount = 12;
+        // 동시에 재생 가능한 효과음 개수.
+        private const int SfxSourceCount = 6;
 
-        // ─────────────────────────────────────────────
+        // -------------------------------
         //  싱글톤
-        // ─────────────────────────────────────────────
+        // -------------------------------
 
         private static SoundManager _instance;
 
@@ -51,22 +50,16 @@ namespace Project.Core.Audio
         {
             if (_instance != null) return;
 
-            // 씬에 직접 배치해 둔 것이 있으면 그것을 우선 사용한다.
             _instance = FindAnyObjectByType<SoundManager>();
             if (_instance != null) return;
 
             var go = new GameObject("[SoundManager]");
-            _instance = go.AddComponent<SoundManager>(); // AddComponent 시점에 Awake가 실행된다
+            _instance = go.AddComponent<SoundManager>();
         }
 
-        // ─────────────────────────────────────────────
-        //  필드
-        // ─────────────────────────────────────────────
-
-        [Tooltip("비워두면 Resources 폴더에서 자동으로 불러온다.")]
         [SerializeField] private SoundLibrary library;
 
-        // 키 → 등록 정보. 매 재생마다 리스트를 훑지 않기 위해 딕셔너리로 변환해 둔다.
+        // 키 → 등록 정보. 매 재생마다 딕셔너리로 변환해 둔다.
         private readonly Dictionary<string, SoundLibrary.SoundEntry> _bgmTable = new();
         private readonly Dictionary<string, SoundLibrary.SoundEntry> _sfxTable = new();
 
@@ -76,8 +69,8 @@ namespace Project.Core.Audio
 
         // 효과음용 AudioSource 풀.
         private readonly List<AudioSource> _sfxSources = new();
-        private string[] _sfxPlayingKeys;   // 각 소스가 현재 무슨 키를 재생 중인지 (개별 정지용)
-        private int _nextSfxIndex;          // 전부 사용 중일 때 재사용할 순번
+        private string[] _sfxPlayingKeys;   // 현재 무슨 키를 재생 중인지
+        private int _nextSfxIndex;
 
         private float _masterVolume = 1f;
         private float _bgmVolume = 1f;
@@ -88,17 +81,13 @@ namespace Project.Core.Audio
 
         private bool _initialized;
 
-        // 현재 BGM이 최종적으로 가져야 할 볼륨.
+        // 현재 BGM 볼륨.
         private float CurrentBgmTargetVolume =>
             _masterVolume * _bgmVolume * (_currentBgmEntry?.volume ?? 1f);
 
-        // ─────────────────────────────────────────────
-        //  초기화
-        // ─────────────────────────────────────────────
 
         private void Awake()
         {
-            // 싱글톤 구조로 설계
             if (_instance != null && _instance != this)
             {
                 Destroy(gameObject);
@@ -122,8 +111,7 @@ namespace Project.Core.Audio
 
             if (library == null)
             {
-                Debug.LogError($"[SoundManager] SoundLibrary를 찾지 못했습니다. " +
-                               $"Resources/{LibraryResourcePath}.asset 이 있는지 확인하세요.");
+                Debug.LogError($"[SoundManager] SoundLibrary를 찾지 못했습니다.");
             }
             else
             {
@@ -143,6 +131,7 @@ namespace Project.Core.Audio
         {
             if (source == null) return;
 
+            // code by Claude Opus
             foreach (var entry in source)
             {
                 if (entry == null || entry.clip == null) continue;
@@ -185,20 +174,18 @@ namespace Project.Core.Audio
             var source = child.AddComponent<AudioSource>();
             source.playOnAwake = false;
             source.loop = loop;
-            source.spatialBlend = 0f;   // 2D 게임이므로 공간 사운드를 끈다
+            source.spatialBlend = 0f;
             source.volume = 0f;
             return source;
         }
 
-        // ─────────────────────────────────────────────
+        // -------------------------------
         //  BGM
-        // ─────────────────────────────────────────────
+        // -------------------------------
 
         /// <summary>
         /// 배경음을 재생한다. 이미 같은 곡이 재생 중이면 아무 일도 하지 않는다.
         /// </summary>
-        /// <param name="key">SoundKey 상수를 사용할 것</param>
-        /// <param name="fadeDuration">전환에 걸리는 시간(초). 0이면 즉시 전환된다.</param>
         public void PlayBGM(string key, float fadeDuration = 0.8f)
         {
             if (!_bgmTable.TryGetValue(key, out var entry))
@@ -249,9 +236,7 @@ namespace Project.Core.Audio
         }
 
         /// <summary>
-        /// to는 올리고 from은 내리는 크로스페이드. 둘 중 하나는 null이어도 된다.
-        /// Time.timeScale이 0이어도 동작하도록 unscaledDeltaTime을 사용한다.
-        /// (일시정지 메뉴에서 음량이 멈추는 것을 막기 위함)
+        /// 두 음원을 크로스페이드하는 코루틴
         /// </summary>
         private IEnumerator FadeRoutine(AudioSource to, float toTarget,
                                         AudioSource from, float fromTarget,
@@ -289,15 +274,14 @@ namespace Project.Core.Audio
             _bgmFadeRoutine = null;
         }
 
-        // ─────────────────────────────────────────────
+        // -------------------------------
         //  SFX
-        // ─────────────────────────────────────────────
+        // -------------------------------
 
         /// <summary>
         /// 효과음을 재생한다.
         /// </summary>
-        /// <param name="key">SoundKey 상수를 사용할 것</param>
-        /// <param name="volumeScale">이번 재생에만 적용할 볼륨 배율(0~1)</param>
+        /// <param name="key">SoundKey 상수</param>
         public void PlaySFX(string key, float volumeScale = 1f)
         {
             if (!_sfxTable.TryGetValue(key, out var entry))
@@ -313,7 +297,7 @@ namespace Project.Core.Audio
             source.clip = entry.clip;
             source.volume = _masterVolume * _sfxVolume * entry.volume * Mathf.Clamp01(volumeScale);
 
-            // 피치를 살짝 흔들어 반복 재생이 기계적으로 들리는 것을 막는다.
+            // 반복 재생이 기계적으로 들리는 것을 막는다.
             source.pitch = entry.pitchVariance > 0f
                 ? 1f + Random.Range(-entry.pitchVariance, entry.pitchVariance)
                 : 1f;
@@ -322,7 +306,7 @@ namespace Project.Core.Audio
         }
 
         /// <summary>
-        /// 특정 키의 효과음만 즉시 정지한다. (긴 효과음을 중간에 끊어야 할 때)
+        /// 특정 키의 효과음만 즉시 정지한다.
         /// </summary>
         public void StopSFX(string key)
         {
@@ -360,15 +344,15 @@ namespace Project.Core.Audio
             return index;
         }
 
-        // ─────────────────────────────────────────────
+        // -------------------------------
         //  볼륨
-        // ─────────────────────────────────────────────
+        // -------------------------------
 
         public float MasterVolume => _masterVolume;
         public float BgmVolume => _bgmVolume;
         public float SfxVolume => _sfxVolume;
 
-        /// <summary>전체 볼륨(0~1). 옵션 UI의 슬라이더에 그대로 연결하면 된다.</summary>
+        /// <summary>전체 볼륨(0~1)..</summary>
         public void SetMasterVolume(float value)
         {
             _masterVolume = Mathf.Clamp01(value);
@@ -381,7 +365,9 @@ namespace Project.Core.Audio
             ApplyBgmVolume();
         }
 
-        /// <summary>효과음 볼륨. 이미 재생 중인 소리에는 적용되지 않고 다음 재생부터 반영된다.</summary>
+        /// <summary>
+        /// 효과음 볼륨
+        /// </summary>
         public void SetSfxVolume(float value)
         {
             _sfxVolume = Mathf.Clamp01(value);
@@ -393,6 +379,7 @@ namespace Project.Core.Audio
         /// </summary>
         private void ApplyBgmVolume()
         {
+            // Code by Claude Opus
             if (_bgmFadeRoutine != null) return;
             _bgmSources[_activeBgmIndex].volume = CurrentBgmTargetVolume;
         }
