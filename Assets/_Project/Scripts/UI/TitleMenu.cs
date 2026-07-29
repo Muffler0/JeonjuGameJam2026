@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using Project.Core.Audio;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -41,6 +42,8 @@ namespace Project.UI
 
             AddListener(settingsCloseButton, CloseSettings);
             AddListener(creditsCloseButton, CloseCredits);
+
+            SoundManager.Instance.PlayBGM(SoundKey.TitleBGM);
         }
 
         private void AddListener(Button button, UnityEngine.Events.UnityAction action)

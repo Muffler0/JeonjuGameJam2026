@@ -17,6 +17,14 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 6a65d49e8910a3a4f82831f250ec51a6, type: 3}
     volume: 1
     pitchVariance: 0
+  - key: TitleBGM
+    clip: {fileID: 8300000, guid: b3a7912490ee3ed4e99a9be1e60d3a85, type: 3}
+    volume: 1
+    pitchVariance: 0
+  - key: StageBGM
+    clip: {fileID: 8300000, guid: 69ccbf66f1a0a5f4fa537ed9e897c578, type: 3}
+    volume: 1
+    pitchVariance: 0
   sfxList:
   - key: ExampleSFX
     clip: {fileID: 8300000, guid: 426179826949f10498fe9e635588b02a, type: 3}

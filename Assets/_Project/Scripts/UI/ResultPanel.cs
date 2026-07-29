@@ -217,9 +217,8 @@ namespace Project.UI
 
         private void OnExitClicked()
         {
-            // 방을 떠나면 상대 쪽에서 이탈 처리가 돌아가므로 별도 통지는 필요 없다.
-            bridge.LeaveGame();
             SceneLoader.Instance.Load(SceneName.Title, fadeOutBgm: true);
+            bridge.LeaveGame();
         }
     }
 }

@@ -12,4 +12,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40ca946d5c70162428458e1dc25551cc, type: 3}
   m_Name: ToyLibrary
   m_EditorClassIdentifier: Assembly-CSharp::Project.Data.ToyLibrary
-  toys: []
+  toys:
+  - displayName: Fidget Spinner
+    sprite: {fileID: -4405867070948070397, guid: ec5a666a52bf11e41a00c07a4d71161c, type: 3}
+  - displayName: Toll
+    sprite: {fileID: 21300000, guid: 9dd882ce459f1834da6f5702fc2e2e2c, type: 3}
+  - displayName: Glass Marbles
+    sprite: {fileID: 21300000, guid: a186c4a7c2effe746bbe48316d5aa281, type: 3}
+  - displayName: Slinky
+    sprite: {fileID: 8511555702317002769, guid: f1d456962fbffeb4fa75e928480a14c8, type: 3}
+  - displayName: Cube
+    sprite: {fileID: 7213009374250079440, guid: 61e50036c9c161a4983963cc44aff95e, type: 3}
+  - displayName: Jenga
+    sprite: {fileID: -2386523948713177215, guid: d8b3c7c3a01ff0546a7db39bbab31de5, type: 3}
+  - displayName: Phone
+    sprite: {fileID: -2736914426706177093, guid: 76929273139f7dc4892954eb5bf59619, type: 3}
+  - displayName: Car
+    sprite: {fileID: -4915060894535151340, guid: 82f890a911c0bbb43961ee17d8dcc9da, type: 3}
+  - displayName: Chattering Teeth
+    sprite: {fileID: 21300000, guid: 8e2a0af31fa26734c954f6b2083fe41f, type: 3}
+  - displayName: Duck
+    sprite: {fileID: -2482358603054426197, guid: 32e1c647f5451ab48bed4ae27bddae24, type: 3}
+  - displayName: Good Luck Troll
+    sprite: {fileID: -5537515189387080268, guid: 48a9184c025e21946a9d18003685a846, type: 3}
+  - displayName: Putty Egg
+    sprite: {fileID: 6072064987878726626, guid: 0b8b7def3c180324aaf9d9016f26c4a3, type: 3}

@@ -7,6 +7,8 @@ namespace Project.Core.Audio
     {
         // --- BGM ---
         public const string ExampleBGM = "ExampleBGM";
+        public const string TitleBGM = "TitleBGM";
+        public const string StageBGM = "StageBGM";
 
         // - SFX : UI ---
         public const string ExampleSFX = "ExampleSFX";

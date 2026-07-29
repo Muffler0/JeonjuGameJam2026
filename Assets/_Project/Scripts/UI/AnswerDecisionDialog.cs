@@ -32,6 +32,10 @@ namespace Project.UI
 
         private GameObject Panel { get { return panel != null ? panel : gameObject; } }
 
+        [SerializeField] private GameFeedbackUI feedback;
+
+        private bool _pendingOpen;
+
         // -------------------------------------------------------
         //  초기화
         // -------------------------------------------------------
@@ -52,6 +56,8 @@ namespace Project.UI
             bridge.OnPenaltyChanged += HandlePenaltyChanged;
             bridge.OnBoardReady += HandleBoardReady;
             bridge.OnGameFinished += HandleGameFinished;
+
+            if (feedback != null) feedback.OnAllPlayed += HandleFeedbackFinished;
         }
 
         private void OnDisable()
@@ -62,6 +68,8 @@ namespace Project.UI
             bridge.OnPenaltyChanged -= HandlePenaltyChanged;
             bridge.OnBoardReady -= HandleBoardReady;
             bridge.OnGameFinished -= HandleGameFinished;
+
+            if (feedback != null) feedback.OnAllPlayed -= HandleFeedbackFinished;
         }
 
         private void OnDestroy()
@@ -86,8 +94,30 @@ namespace Project.UI
             bool isMyDecision = phase == GameController.Phase.AnswerDecision
                                 && player == bridge.LocalPlayerId;
 
-            if (isMyDecision) Open();
-            else Close();
+            if (!isMyDecision)
+            {
+                _pendingOpen = false;
+                Close();
+                return;
+            }
+
+            // 알림이 재생 중이면 끝난 뒤에 연다.
+            if (feedback != null && feedback.IsBusy)
+            {
+                _pendingOpen = true;
+                Close();
+                return;
+            }
+
+            Open();
+        }
+
+        private void HandleFeedbackFinished()
+        {
+            if (!_pendingOpen) return;
+
+            _pendingOpen = false;
+            Open();
         }
 
         private void HandlePenaltyChanged(PlayerId player, bool has)
@@ -113,7 +143,7 @@ namespace Project.UI
 
             if (messageText != null)
             {
-                messageText.text = "Do you want to guess now?";
+                messageText.text = "Guess or Pass";
             }
 
             RefreshButtons();

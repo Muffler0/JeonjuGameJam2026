@@ -75,6 +75,8 @@ namespace Project.Gameplay
         /// <summary>デバッグ用のログ出力口。Unity 側が受け取って表示します。</summary>
         public Action<string> Log;
 
+        public event Action<PlayerId> OnPassed;
+
         // -------------------------------------------------------
         //  読み取り専用の状態
         // -------------------------------------------------------
@@ -338,6 +340,7 @@ namespace Project.Gameplay
             if (!willAnswer)
             {
                 Log?.Invoke($"{player} が推測を見送りました。");
+                OnPassed?.Invoke(player);
                 EndTurn();
                 return;
             }

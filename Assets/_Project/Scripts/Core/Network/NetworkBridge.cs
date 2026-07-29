@@ -114,6 +114,12 @@ namespace Project.Core.Network
         /// <summary>재대국이 무산됐다. (거절 또는 시간 초과)</summary>
         public event Action OnRematchDeclined;
 
+        /// <summary>채팅이 도착했다. (보낸 사람, 내용)</summary>
+        public event Action<PlayerId, string> OnChatReceived;
+
+        /// <summary>추측을 넘겼다.</summary>
+        public event Action<PlayerId> OnPassed;
+
         // -------------------------------------------------------
         //  상태
         // -------------------------------------------------------
@@ -146,6 +152,8 @@ namespace Project.Core.Network
 
         private bool _gameEnded;
 
+        private const int MaxChatLength = 80;
+
         // -------------------------------------------------------
         //  시작
         // -------------------------------------------------------
@@ -166,6 +174,12 @@ namespace Project.Core.Network
 
             CreateGameController();
             StartNewRound();
+        }
+
+        [PunRPC]
+        private void RpcPassed(int player)
+        {
+            OnPassed?.Invoke((PlayerId)player);
         }
 
         /// <summary>
@@ -199,6 +213,9 @@ namespace Project.Core.Network
         private void CreateGameController()
         {
             _game = new GameController();
+
+            _game.OnPassed += player =>
+                photonView.RPC(nameof(RpcPassed), RpcTarget.All, (int)player);
 
             // 룰 계층은 Debug.Log를 쓸 수 없으므로 여기서 콘솔에 연결해 준다.
             _game.Log = message => Debug.Log($"[GameRules] {message}");
@@ -316,6 +333,16 @@ namespace Project.Core.Network
             NetworkManager.Instance.LeaveRoom();
         }
 
+        public void SendChat(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message)) return;
+
+            var trimmed = message.Trim();
+            if (trimmed.Length > MaxChatLength) trimmed = trimmed.Substring(0, MaxChatLength);
+
+            photonView.RPC(nameof(RpcChat), RpcTarget.All, (int)LocalPlayerId, trimmed);
+        }
+
         // -------------------------------------------------------
         //  입력 RPC (마스터에서만 실행)
         // -------------------------------------------------------
@@ -342,6 +369,12 @@ namespace Project.Core.Network
         private void RpcSubmitConfirmation(int playerId, bool confirmed)
         {
             _game?.SubmitConfirmation((PlayerId)playerId, confirmed);
+        }
+
+        [PunRPC]
+        private void RpcChat(int sender, string message)
+        {
+            OnChatReceived?.Invoke((PlayerId)sender, message);
         }
 
         // -------------------------------------------------------

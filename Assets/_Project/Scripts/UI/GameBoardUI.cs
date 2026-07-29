@@ -4,6 +4,7 @@ using Project.Core.Network;
 using Project.Data;
 using Project.Gameplay;
 using UnityEngine;
+using Project.Core.Audio;
 
 namespace Project.UI
 {
@@ -41,6 +42,9 @@ namespace Project.UI
 
         /// <summary>제한 시간 표시를 감춰야 한다.</summary>
         public event Action OnTimerHidden;
+
+        /// <summary>내 장난감을 정했다. 인자는 아이템 ID.</summary>
+        public event Action<int> OnMySecretChosen;
 
         // -------------------------------------------------------
         //  상태
@@ -162,6 +166,7 @@ namespace Project.UI
                 int slot = PickRandomSlot();
                 _mySecretSlot = slot;
                 bridge.RequestSecretItem(slot);
+                OnMySecretChosen?.Invoke(_itemIds[slot]);
                 RefreshTiles();
                 return;
             }
@@ -216,6 +221,8 @@ namespace Project.UI
 
             RefreshTiles();
             StartTimer(secretSelectSeconds);
+
+            SoundManager.Instance.PlayBGM(SoundKey.StageBGM);
         }
 
         private void HandleTurnStarted(TurnInfo info)
@@ -290,6 +297,7 @@ namespace Project.UI
                     // 룰 계층이 수락 통지를 주지 않으므로 로컬에서 먼저 반영한다.
                     _mySecretSlot = slotIndex;
                     bridge.RequestSecretItem(slotIndex);
+                    OnMySecretChosen?.Invoke(_itemIds[slotIndex]);
                     StopTimer();
                     break;
 

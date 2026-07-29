@@ -76,7 +76,6 @@ namespace Project.UI
         private void OnEnable()
         {
             _net = NetworkManager.Instance;
-            _net.OnStateChanged += HandleStateChanged;
 
             _net.OnStateChanged += HandleStateChanged;
             _net.OnError += HandleError;
@@ -88,9 +87,17 @@ namespace Project.UI
 
         private void OnDisable()
         {
-            if (_net == null) return;
+            Unsubscribe();
+        }
 
-            var net = NetworkManager.Instance;
+        private void OnDestroy()
+        {
+            Unsubscribe();
+        }
+
+        private void Unsubscribe()
+        {
+            if (_net == null) return;
 
             _net.OnStateChanged -= HandleStateChanged;
             _net.OnError -= HandleError;
@@ -98,6 +105,8 @@ namespace Project.UI
             _net.OnOpponentLeft -= HandleOpponentLeft;
             _net.OnCountdownCancelled -= HandleCountdownCancelled;
             _net.OnGameStart -= HandleGameStart;
+
+            _net = null;
         }
 
         private void Update()
@@ -209,6 +218,7 @@ namespace Project.UI
         private void HandleStateChanged(NetworkState state)
         {
             if (!_matchFlowActive) return;
+            if (matchPanel == null || waitingPanel == null) return;
 
             switch (state)
             {

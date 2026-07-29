@@ -12,4 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36263a8741175114d8b62ff47f5c3b3b, type: 3}
   m_Name: TopicLibrary
   m_EditorClassIdentifier: Assembly-CSharp::Project.Data.TopicLibrary
-  topics: []
+  topics:
+  - How big is it?
+  - About the Texture
+  - About the color
+  - What would it sound like?
+  - Does it look like a character?
+  - What is it as heavy as?
+  - Does it have legs?
+  - Does it glow?
+  - Do you like it?
+  - Have you ever played with it? When?
+  - How to play with it
+  - How do you play with it?
+  - Price it.
+  - How much do you think it would cost?
+  - What kind of flavor(or taste) will it be?
+  - Give it a new name.
+  - Talk about anything related to it. (or your current thoughts)
